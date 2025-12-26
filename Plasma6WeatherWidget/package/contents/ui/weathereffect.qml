@@ -1,6 +1,11 @@
 // ==============================
 // === WEATHER EFFECTS LAYER ====
 // ==============================
+import QtQuick
+import QtQuick.Particles
+import org.kde.plasma.plasmoid
+import org.kde.plasma.core as PlasmaCore
+
 Item {
     id: weatherEffectsContainer
     anchors.fill: parent

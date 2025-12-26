@@ -1,0 +1,26 @@
+{
+    "KPlugin": {
+        "Authors": [
+            {
+                "Email": "kate.buckley@gmail.com",
+                "Name": "Kate Buckley"
+            }
+        ],
+        "Category": "Environment and Weather",
+        "Description": "Plasmoid showing weather information from met.no server",
+        "Icon": "weather-clouds",
+        "Id": "org.kde.plasma6.weatherWidget",
+        "License": "GPL2",
+        "Name": "Plasma6 Weather Widget",
+        "ServiceTypes": [
+            "Plasma/Applet"
+        ],
+        "Version": "3.0.0",
+        "Website": "https://github.com/blackadderkate/weather-widget-2"
+    },
+    "X-Plasma-API": "declarativeappletscript",
+    "X-Plasma-MainScript": "ui/main.qml",
+    "X-Plasma-NotificationArea": true,
+    "X-KDE-PluginInfo-EnabledByDefault": true,
+    "X-Plasma-Requires-LaunchApp": false
+}
