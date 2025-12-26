@@ -250,8 +250,110 @@ Item {
         else if (windSpeed > 8) return "Breezy"
         else if (cond.includes("rain") || cond.includes("drizzle")) return "Wet"
         else if (cond.includes("snow")) return "Snowy"
+        else if (cond.includes("fog")) return "Foggy"
         else if (cond.includes("cloudy") || cond.includes("overcast")) return "Overcast"
         else return "Calm"
+    }
+
+    // --- MOON PHASE CALCULATION ---
+    property string moonPhase: {
+        // Calculate moon phase based on current date
+        var now = new Date()
+        var year = now.getFullYear()
+        var month = now.getMonth() + 1
+        var day = now.getDate()
+        
+        // Simple algorithm to calculate moon phase (0-29.53 days cycle)
+        var c = Math.floor(year / 100)
+        var e = 2 - c + Math.floor(c / 4)
+        var jd = Math.floor(365.25 * (year + 4716)) + Math.floor(30.6001 * (month + 1)) + day + e - 1524.5
+        var phase = (jd - 2451550.1) / 29.530588853
+        phase = phase - Math.floor(phase)
+        if (phase < 0) phase = phase + 1
+        
+        // Determine moon phase name
+        if (phase < 0.03) return "New Moon"
+        else if (phase < 0.22) return "Waxing Crescent"
+        else if (phase < 0.27) return "First Quarter"
+        else if (phase < 0.47) return "Waxing Gibbous"
+        else if (phase < 0.53) return "Full Moon"
+        else if (phase < 0.72) return "Waning Gibbous"
+        else if (phase < 0.77) return "Last Quarter"
+        else return "Waning Crescent"
+    }
+
+    // --- MOON PHASE ICON ---
+    property string moonPhaseIcon: {
+        var now = new Date()
+        var year = now.getFullYear()
+        var month = now.getMonth() + 1
+        var day = now.getDate()
+        
+        var c = Math.floor(year / 100)
+        var e = 2 - c + Math.floor(c / 4)
+        var jd = Math.floor(365.25 * (year + 4716)) + Math.floor(30.6001 * (month + 1)) + day + e - 1524.5
+        var phase = (jd - 2451550.1) / 29.530588853
+        phase = phase - Math.floor(phase)
+        if (phase < 0) phase = phase + 1
+        
+        // Return moon phase icon based on phase
+        if (phase < 0.03) return "🌑"  // New Moon
+        else if (phase < 0.22) return "🌒"  // Waxing Crescent
+        else if (phase < 0.27) return "🌓"  // First Quarter
+        else if (phase < 0.47) return "🌔"  // Waxing Gibbous
+        else if (phase < 0.53) return "🌕"  // Full Moon
+        else if (phase < 0.72) return "🌖"  // Waning Gibbous
+        else if (phase < 0.77) return "🌗"  // Last Quarter
+        else return "🌘"  // Waning Crescent
+    }
+
+    // --- NIGHTTIME SETTINGS ---
+    property bool isNightTime: {
+        var now = new Date().getTime()
+        if (hasSunData && localSunrise.getTime() > 0 && localSunset.getTime() > 0) {
+            return now < localSunrise.getTime() || now > localSunset.getTime()
+        } else {
+            // Fallback to time-based calculation
+            var hour = new Date().getHours()
+            return hour < 6 || hour >= 20
+        }
+    }
+
+    // --- FOG PARTICLES ---
+    Item {
+        id: fogContainer
+        anchors.fill: parent
+        visible: currentProvider && (
+            currentProvider.currentCondition.toLowerCase().includes("fog") ||
+            currentProvider.currentCondition.toLowerCase().includes("mist")
+        )
+
+        ParticleSystem {
+            id: fogSystem
+            width: parent.width
+            height: parent.height
+
+            ImageParticle {
+                source: "qrc:/effects/samples.webp"
+                color: "#ffffff"
+                alpha: 0.3
+                size: 40
+                sizeVariation: 20
+                lifeSpan: 8000
+                velocityFromAngle: 0
+                velocityFromMagnitude: 5 + (actualWeatherModel.count > 0 ? actualWeatherModel.get(0).windSpeedMps : 0)
+                velocityVariation: 5
+            }
+
+            Emitter {
+                anchors.fill: parent
+                emitRate: 20
+                lifeSpan: 8000
+                lifeSpanVariation: 1000
+                size: 30
+                endSize: 50
+            }
+        }
     }
 
     property bool debugLogging: plasmoid.configuration.debugLogging
@@ -570,6 +672,9 @@ Item {
         subText += '<td><font size="4"><font style="font-family: weathericons">\uf052</font>&nbsp;' + additionalWeatherInfo.sunSetTime + ' '+timezoneShortName + '</font></td>'
         subText += '</tr>'
         subText += '</table>'
+        
+        // Add moon phase information
+        subText += '<br /><font size="4">' + moonPhaseIcon + '&nbsp;' + moonPhase + '</font>'
 
         subText += '<br /><br />'
         subText += '<font size="3">' + i18n("near future") + '</font>'
@@ -607,6 +712,9 @@ Item {
         subText += '<td><font size="4"><font style="font-family: weathericons">\uf052</font>&nbsp;' + additionalWeatherInfo.sunSetTime + ' '+timezoneShortName + '</font></td>'
         subText += '</tr>'
         subText += '</table>'
+        
+        // Add moon phase information
+        subText += '<br /><font size="4">' + moonPhaseIcon + '&nbsp;' + moonPhase + '</font>'
 
         subText += '<br /><br />'
         subText += '<font size="3">' + i18n("near future") + '</font>'
