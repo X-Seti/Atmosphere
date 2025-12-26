@@ -1,5 +1,5 @@
 # Atmosphere Widget v1.0 - X-Seti - Aug 14 2025
-A reimagined version of Weather Widget 2 — now with living atmosphere.
+A reimagined version of Weather Widget 2 / plus versions — now with living atmosphere.
 
 ## Features
 - 🌦️ Dynamic wallpaper brightness (time + weather)
