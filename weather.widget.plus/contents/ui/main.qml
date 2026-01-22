@@ -628,8 +628,6 @@ PlasmoidItem {
         cacheData.cacheMap[cacheID] = contentToCache
     }
 
-    }
-
     function showDiaryEntryDialog(weatherData) {
         // Check if diary logging is enabled
         if (!plasmoid.configuration.diaryLoggingEnabled) {
