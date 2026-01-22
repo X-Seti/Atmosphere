@@ -10,7 +10,7 @@ function todayHeader() {
     return d.toLocaleDateString(Qt.locale(), "ddd, d MMM yyyy")
 }
 
-function appendWeather(model) {
+function appendWeather(model, additionalEntry) {
     let file = Qt.openFile(diaryPath(), "a")
 
     file.write(
@@ -18,10 +18,14 @@ function appendWeather(model) {
         "Weather: " + model.condition + "\n" +
         "Temperature: " + Math.round(model.temperature) + "°C\n" +
         "Humidity: " + model.humidity + "%\n" +
-        "Pressure: " + Math.round(model.pressureHpa) + " hPa\n\n" +
-        "Health:\n" +
-        "not data entered!\n\n"
+        "Pressure: " + Math.round(model.pressureHpa) + " hPa\n\n"
     )
+    
+    if (additionalEntry && additionalEntry.trim() !== "") {
+        file.write(additionalEntry.trim() + "\n\n")
+    } else {
+        file.write("no data entered!\n\n")
+    }
 
     file.close()
 }
