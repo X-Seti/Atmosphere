@@ -2,18 +2,21 @@
 # Compiled and build artifacts
 *.pyc
 __pycache__/
+*.qmlc
+*.jsc
 *.o
 *.obj
-dist/
-build/
-target/
+*.so
+*.dll
+*.exe
 
 # Dependencies
-.venv/
-venv/
 node_modules/
-.julia/
-.zig/
+venv/
+.venv/
+.env
+.env.local
+*.env.*
 
 # Logs and temp files
 *.log
@@ -21,32 +24,24 @@ node_modules/
 *.swp
 *.swo
 
-# Environment
-.env
-.env.local
-.env.*
-
 # Editors
 .vscode/
 .idea/
-*.swp
-*.swo
 
 # System files
 .DS_Store
 Thumbs.db
 
-# Coverage
+# Coverage and testing
+.coverage
 coverage/
 htmlcov/
-.coverage
 
-# Gradle
+# Build directories (common in various projects)
+dist/
+build/
+target/
 .gradle/
-
-# MyPy
 .mypy_cache/
-
-# PyTest
 .pytest_cache/
 ```
