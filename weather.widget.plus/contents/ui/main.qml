@@ -567,16 +567,16 @@ PlasmoidItem {
             return false
         }
 
-        currentPlace = JSON.parse(cacheData.cacheMap[cacheData.cacheKey][1])
+        currentPlace = JSON.parse(cacheData.cacheMap[cacheData.cacheKey]["1"])
         currentPlace.provider = setCurrentProviderAccordingId(currentPlace.providerId)
 
         // for(const [key,value] of Object.entries(currentPlace)) { console.log(`  ${key}: ${value}`) }
 
-        currentWeatherModel = cacheData.cacheMap[cacheData.cacheKey][2]
+        currentWeatherModel = cacheData.cacheMap[cacheData.cacheKey]["2"]
         // dbgprint("currentPlace:\t"  + currentPlace.alias + "\t" + currentPlace.identifier + "\t" + currentPlace.timezoneID + "\t" + currentPlace.timezoneShortName + "\t")
         // dbgprint(JSON.stringify(currentWeatherModel))
-        let meteogramModelData = JSON.parse( cacheData.cacheMap[cacheData.cacheKey][3])
-        let nextDaysModelData = JSON.parse( cacheData.cacheMap[cacheData.cacheKey][4])
+        let meteogramModelData = JSON.parse( cacheData.cacheMap[cacheData.cacheKey]["3"])
+        let nextDaysModelData = JSON.parse( cacheData.cacheMap[cacheData.cacheKey]["4"])
         // dbgprint(cacheData.cacheMap[cacheData.cacheKey][4])
         meteogramModel.clear()
         for (var i = 0; i < meteogramModelData.length; ++i) {
@@ -623,7 +623,7 @@ PlasmoidItem {
         currentPlace.provider = ""
         // for(const [key,value] of Object.entries(currentPlace)) { console.log(`  ${key}: ${value}`) }
 
-        let contentToCache = {1: JSON.stringify(currentPlace), 2: currentWeatherModel, 3: JSON.stringify(meteogramModelData), 4: JSON.stringify(nextDayModelData)}
+        let contentToCache = {"1": JSON.stringify(currentPlace), "2": currentWeatherModel, "3": JSON.stringify(meteogramModelData), "4": JSON.stringify(nextDayModelData)}
         print("saving cacheKey = " + cacheID)
         cacheData.cacheMap[cacheID] = contentToCache
     }
