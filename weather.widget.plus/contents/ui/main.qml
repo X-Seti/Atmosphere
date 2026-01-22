@@ -16,9 +16,10 @@
  */
 import QtQuick 2.15
 import QtQuick.Layouts
+import QtQuick.Controls
+import QtQuick.Controls.Material
 import org.kde.plasma.plasmoid
 import org.kde.plasma.core as PlasmaCore
-import QtQuick.Controls
 import org.kde.plasma.components 3.0 as PlasmaComponents
 import org.kde.plasma.plasma5support as Plasma5Support
 import org.kde.kirigami as Kirigami
@@ -96,6 +97,7 @@ PlasmoidItem {
     property int iconSizeMode: plasmoid.configuration.iconSizeMode
     property int textSizeMode: plasmoid.configuration.textSizeMode
     property bool debugLogging: plasmoid.configuration.debugLogging
+    property bool diaryLoggingEnabled: plasmoid.configuration.diaryLoggingEnabled
     property int inTrayActiveTimeoutSec: plasmoid.configuration.inTrayActiveTimeoutSec
     property string widgetFontName: (plasmoid.configuration.widgetFontName === "") ? Kirigami.Theme.defaultFont : plasmoid.configuration.widgetFontName
     property int widgetFontSize: plasmoid.configuration.widgetFontSize
@@ -376,8 +378,9 @@ PlasmoidItem {
         // ✅ DAILY LOGGING
         var today = new Date().toISOString().slice(0, 10)
 
-        if (plasmoid.configuration.lastLoggedDate !== today) {
-            Diary.appendWeather({
+        if (plasmoid.configuration.diaryLoggingEnabled && plasmoid.configuration.lastLoggedDate !== today) {
+            // Show diary entry dialog to get additional information
+            showDiaryEntryDialog({
                 temperature: currentWeatherModel.temperature,
                 humidity: currentWeatherModel.humidity,
                 pressureHpa: currentWeatherModel.pressureHpa,
@@ -623,6 +626,75 @@ PlasmoidItem {
         let contentToCache = {1: JSON.stringify(currentPlace), 2: currentWeatherModel, 3: JSON.stringify(meteogramModelData), 4: JSON.stringify(nextDayModelData)}
         print("saving cacheKey = " + cacheID)
         cacheData.cacheMap[cacheID] = contentToCache
+    }
+
+    }
+
+    function showDiaryEntryDialog(weatherData) {
+        // Check if diary logging is enabled
+        if (!plasmoid.configuration.diaryLoggingEnabled) {
+            return;
+        }
+        
+        // Create and show the diary entry dialog
+        diaryEntryDialog.weatherData = weatherData;
+        diaryEntryDialog.open();
+    }
+
+    // Diary Entry Dialog Component
+    PlasmaComponents.Dialog {
+        id: diaryEntryDialog
+        title: i18n("Add to Daily Diary")
+        flags: Qt.Dialog | Qt.WindowCloseButtonHint
+        
+        property var weatherData: null
+        
+        standardButtons: PlasmaComponents.Dialog.Ok | PlasmaComponents.Dialog.Cancel
+        
+        onAccepted: {
+            // Save the diary entry with the user input
+            Diary.appendWeather(diaryEntryDialog.weatherData, diaryTextInput.text);
+        }
+        
+        onRejected: {
+            // Save the diary entry with no additional input
+            Diary.appendWeather(diaryEntryDialog.weatherData, "");
+        }
+        
+        mainItem: Item {
+            width: 400
+            height: 200
+            
+            Column {
+                anchors.fill: parent
+                anchors.margins: 10
+                spacing: 10
+                
+                PlasmaComponents.Label {
+                    text: i18n("Add your health notes for today:")
+                    wrapMode: Text.Wrap
+                }
+                
+                TextArea {
+                    id: diaryTextInput
+                    placeholderText: i18n("e.g., not much sleep, Pain is very high 8/10. (in bed)")
+                    selectByMouse: true
+                    focus: true
+                    Layout.fillWidth: true
+                    Layout.preferredHeight: 80
+                    Keys.onReturnPressed: {
+                        if (Qt.keyboard.modifiers & Qt.ControlModifier) {
+                            diaryEntryDialog.accept();
+                        }
+                    }
+                    Keys.onEnterPressed: {
+                        if (Qt.keyboard.modifiers & Qt.ControlModifier) {
+                            diaryEntryDialog.accept();
+                        }
+                    }
+                }
+            }
+        }
     }
 
 

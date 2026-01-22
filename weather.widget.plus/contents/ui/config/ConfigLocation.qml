@@ -23,6 +23,7 @@ KCM.SimpleKCM {
     property alias cfg_reloadIntervalMin: reloadIntervalMin.value
     property string cfg_places
     property alias cfg_debugLogging: debugLogging.checked
+    property alias cfg_diaryLoggingEnabled: diaryLoggingEnabled.checked
     property double defaultFontPixelSize: Kirigami.Theme.defaultFont.pixelSize
     property bool env_QML_XHR_ALLOW_FILE_READ: plasmoid.configuration.qml_XHR_ALLOW_FILE_READ
     property bool textColorLight: ((Kirigami.Theme.textColor.r + Kirigami.Theme.textColor.g + Kirigami.Theme.textColor.b) / 3) > 0.5
@@ -605,6 +606,13 @@ KCM.SimpleKCM {
             text: "Debug"
             Layout.alignment: Qt.AlignLeft
             visible: false
+        }
+
+        CheckBox {
+            id: diaryLoggingEnabled
+            checked: false
+            text: i18n("Enable daily weather diary logging")
+            Layout.alignment: Qt.AlignLeft
         }
 
     }
