@@ -646,6 +646,7 @@ PlasmoidItem {
         flags: Qt.Dialog | Qt.WindowCloseButtonHint
         
         property var weatherData: null
+        property alias mainItem: dialogContentItem  // Add alias for mainItem compatibility
         
         standardButtons: PlasmaComponents.Dialog.Ok | PlasmaComponents.Dialog.Cancel
         
@@ -659,7 +660,8 @@ PlasmoidItem {
             Diary.appendWeather(diaryEntryDialog.weatherData, "");
         }
         
-        mainItem: Item {
+        contentItem: Item {
+            id: dialogContentItem
             width: 400
             height: 200
             
