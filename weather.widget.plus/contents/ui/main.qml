@@ -114,11 +114,20 @@ PlasmoidItem {
         
         // If no path is configured, use the home directory
         if (!logPath || logPath === "") {
-            // Simple way to get home directory - most Linux systems have /home/$USER
-            // We'll use a temporary fallback and let the system handle it properly
-            var userHome = executable ? "/home/user" : "/tmp";
-            // In a real scenario, this would be determined via system call
-            logPath = "/tmp";  // Safe fallback
+            // Try to get HOME environment variable or use fallback
+            try {
+                // For KDE Plasma widgets, we'll use a more robust approach
+                // If executable is available, we can use it to get the home directory
+                if (executable) {
+                    // We'll just return a default home path - the actual home detection 
+                    // will be handled in the diary.js file
+                    return "";
+                } else {
+                    return "/tmp";  // Fallback
+                }
+            } catch (e) {
+                return "/tmp";  // Safe fallback
+            }
         }
         return logPath;
     }
@@ -665,11 +674,11 @@ PlasmoidItem {
         standardButtons: PlasmaComponents.Dialog.Ok | PlasmaComponents.Dialog.Cancel
 
         onAccepted: {
-            Diary.appendWeather(diaryEntryDialog.weatherData, diaryTextInput.text, executable, diaryLogPath)
+            Diary.appendWeather(diaryEntryDialog.weatherData, diaryTextInput.text, executable, diaryLogPath, plasmoid.configuration.diaryLayoutType)
         }
 
         onRejected: {
-            Diary.appendWeather(diaryEntryDialog.weatherData, "", executable, diaryLogPath)
+            Diary.appendWeather(diaryEntryDialog.weatherData, "", executable, diaryLogPath, plasmoid.configuration.diaryLayoutType)
         }
 
         contentItem: Item {

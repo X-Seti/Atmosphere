@@ -4,7 +4,7 @@ import org.kde.plasma.configuration 2.0
 ConfigModel {
     ConfigCategory {
          name: i18n("Location")
-         icon: 'preferences-desktop-navigation'
+         icon: 'preferences-desktop-location'
          source: 'config/ConfigLocation.qml'
     }
     ConfigCategory {
@@ -19,22 +19,22 @@ ConfigModel {
     }
     ConfigCategory {
         name: i18n("Desktop Effects")
-        icon: 'plugins'
+        icon: 'preferences-desktop-wallpaper'
         source: 'config/ConfigEffects.qml'
     }
     ConfigCategory {
         name: i18n("Meteogram")
-        icon: 'preferences-system'
+        icon: 'applications-science'
         source: 'config/ConfigMeteogram.qml'
     }
     ConfigCategory {
          name: i18n("Units")
-         icon: 'plugins'
+         icon: 'preferences-system-time'
          source: 'config/ConfigUnits.qml'
     }
     ConfigCategory {
-        name: i18n("Logs")
-        icon: 'plugins'
-        source: 'config/Configlogs.qml'
+        name: i18n("Logging")
+        icon: 'document-edit'
+        source: 'config/ConfigLogs.qml'
     }
 }

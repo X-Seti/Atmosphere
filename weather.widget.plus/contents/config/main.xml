@@ -48,6 +48,13 @@
         <entry name="logPath" type="String">
             <default></default>
         </entry>
+        <entry name="diaryLayoutType" type="Enum">
+            <choices>
+                <choice name="Option1"/>
+                <choice name="Option2"/>
+            </choices>
+            <default>0</default>
+        </entry>
     </group>
 
     <group name="Location">
