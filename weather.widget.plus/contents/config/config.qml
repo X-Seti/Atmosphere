@@ -18,6 +18,11 @@ ConfigModel {
         source: 'config/ConfigLayout.qml'
     }
     ConfigCategory {
+        name: i18n("Desktop Effects")
+        icon: 'plugins'
+        source: 'config/ConfigEffects.qml'
+    }
+    ConfigCategory {
         name: i18n("Meteogram")
         icon: 'preferences-system'
         source: 'config/ConfigMeteogram.qml'
@@ -26,5 +31,10 @@ ConfigModel {
          name: i18n("Units")
          icon: 'plugins'
          source: 'config/ConfigUnits.qml'
+    }
+    ConfigCategory {
+        name: i18n("Logs")
+        icon: 'plugins'
+        source: 'config/Configlogs.qml'
     }
 }
