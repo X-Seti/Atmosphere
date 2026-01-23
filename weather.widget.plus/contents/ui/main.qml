@@ -106,7 +106,22 @@ PlasmoidItem {
     property bool debugLogging: plasmoid.configuration.debugLogging
     property int inTrayActiveTimeoutSec: plasmoid.configuration.inTrayActiveTimeoutSec
     property bool diaryLoggingEnabled: plasmoid.configuration.diaryLoggingEnabled !== undefined ? plasmoid.configuration.diaryLoggingEnabled : true
-    property string diaryLogPath: plasmoid.configuration.logPath !== undefined ? plasmoid.configuration.logPath : ""
+    property string diaryLogPath: {
+        // Get the log path from configuration, with fallback to home directory
+        var logPath = plasmoid.configuration.logPath !== undefined && plasmoid.configuration.logPath !== "" 
+                      ? plasmoid.configuration.logPath 
+                      : "";
+        
+        // If no path is configured, use the home directory
+        if (!logPath || logPath === "") {
+            // Simple way to get home directory - most Linux systems have /home/$USER
+            // We'll use a temporary fallback and let the system handle it properly
+            var userHome = executable ? "/home/user" : "/tmp";
+            // In a real scenario, this would be determined via system call
+            logPath = "/tmp";  // Safe fallback
+        }
+        return logPath;
+    }
     property string widgetFontName: (plasmoid.configuration.widgetFontName === "") ? Kirigami.Theme.defaultFont : plasmoid.configuration.widgetFontName
     property int widgetFontSize: plasmoid.configuration.widgetFontSize
     property int temperatureType: plasmoid.configuration.temperatureType

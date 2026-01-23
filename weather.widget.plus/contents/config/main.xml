@@ -40,7 +40,7 @@
             <default>false</default>
         </entry>
         <entry name="diaryLoggingEnabled" type="Bool">
-            <default>false</default>
+            <default>true</default>
         </entry>
         <entry name="lastLoggedDate" type="String">
             <default></default>
