@@ -7,7 +7,8 @@ function diaryPath(logPath) {
     // Use provided log path if available, otherwise default to home directory
     if (!logPath || logPath.trim() === "") {
         // Default to home directory - this should be passed from the QML side
-        logPath = "/tmp"  // fallback path, but ideally this should come from QML
+        // Since we can't access StandardPaths directly in JS library, we'll use a fallback
+        logPath = "/tmp"  // fallback path - this will be overridden by QML
     }
     if (!logPath.endsWith("/")) {
         logPath += "/"
