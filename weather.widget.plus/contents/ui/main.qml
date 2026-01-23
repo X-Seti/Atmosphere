@@ -106,6 +106,7 @@ PlasmoidItem {
     property bool debugLogging: plasmoid.configuration.debugLogging
     property int inTrayActiveTimeoutSec: plasmoid.configuration.inTrayActiveTimeoutSec
     property bool diaryLoggingEnabled: plasmoid.configuration.diaryLoggingEnabled !== undefined ? plasmoid.configuration.diaryLoggingEnabled : true
+    property string diaryLogPath: plasmoid.configuration.logPath !== undefined ? plasmoid.configuration.logPath : ""
     property string widgetFontName: (plasmoid.configuration.widgetFontName === "") ? Kirigami.Theme.defaultFont : plasmoid.configuration.widgetFontName
     property int widgetFontSize: plasmoid.configuration.widgetFontSize
     property int temperatureType: plasmoid.configuration.temperatureType
@@ -649,11 +650,11 @@ PlasmoidItem {
         standardButtons: PlasmaComponents.Dialog.Ok | PlasmaComponents.Dialog.Cancel
 
         onAccepted: {
-            Diary.appendWeather(diaryEntryDialog.weatherData, diaryTextInput.text, executable)
+            Diary.appendWeather(diaryEntryDialog.weatherData, diaryTextInput.text, executable, diaryLogPath)
         }
 
         onRejected: {
-            Diary.appendWeather(diaryEntryDialog.weatherData, "", executable)
+            Diary.appendWeather(diaryEntryDialog.weatherData, "", executable, diaryLogPath)
         }
 
         contentItem: Item {

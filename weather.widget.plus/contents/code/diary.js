@@ -3,8 +3,16 @@
 // Qt 6 compatible diary using bash commands via executable DataSource
 console.log("Diary.js (Qt6) loaded")
 
-function diaryPath() {
-    return Qt.resolvedUrl("/home/x2/daily_weather_diary.txt").toString().replace("file://", "")
+function diaryPath(logPath) {
+    // Use provided log path if available, otherwise default to home directory
+    if (!logPath || logPath.trim() === "") {
+        // Default to home directory - this should be passed from the QML side
+        logPath = "/tmp"  // fallback path, but ideally this should come from QML
+    }
+    if (!logPath.endsWith("/")) {
+        logPath += "/"
+    }
+    return logPath + "daily_weather_diary.txt"
 }
 
 function todayHeader() {
@@ -12,7 +20,7 @@ function todayHeader() {
     return d.toLocaleDateString(Qt.locale(), "ddd, d MMM yyyy")
 }
 
-function appendWeather(model, additionalEntry, executable) {
+function appendWeather(model, additionalEntry, executable, logPath) {
     if (!executable) {
         console.error("Diary: executable DataSource not provided")
         return
@@ -32,7 +40,12 @@ function appendWeather(model, additionalEntry, executable) {
     }
     
     let fullEntry = header + "\\n" + weatherData + notes
-    let filePath = Qt.resolvedUrl("/home/x2/daily_weather_diary.txt").toString().replace("file://", "")
+    let filePath = diaryPath(logPath)
+    
+    // Ensure the directory exists
+    let dirPath = filePath.substring(0, filePath.lastIndexOf("/"))
+    let mkdirCmd = "mkdir -p '" + dirPath + "'"
+    executable.exec(mkdirCmd)
     
     // Escape single quotes in the text
     fullEntry = fullEntry.replace(/'/g, "'\\''")
