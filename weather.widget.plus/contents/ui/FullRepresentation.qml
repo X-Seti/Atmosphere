@@ -43,9 +43,9 @@ Item {
     implicitHeight: headingHeight + imageHeight + footerHeight + nextDaysHeight + 14
 
     Layout.minimumWidth: imageWidth
-    Layout.minimumHeight: headingHeight + imageHeight + footerHeight + nextDaysHeight + 14 + 69 //36
+    Layout.minimumHeight: headingHeight + imageHeight + footerHeight + nextDaysHeight + 14 + 56 //36
     Layout.preferredWidth: imageWidth
-    Layout.preferredHeight: headingHeight + imageHeight + footerHeight + nextDaysHeight + 14 + 69 //36
+    Layout.preferredHeight: headingHeight + imageHeight + footerHeight + nextDaysHeight + 14 + 56 //36 69
 
     onFullRepresentationAliasChanged: {
 
@@ -165,7 +165,8 @@ Item {
 
     ListView {
         id: nextDaysView
-        anchors.bottom: parent.bottom
+        anchors.top: meteogram2.bottom
+        anchors.topMargin: 108
         anchors.bottomMargin: footerHeight + nextDaysVerticalMargin
         anchors.left: parent.left
         anchors.leftMargin: hourLegendMargin - 2
@@ -185,7 +186,8 @@ Item {
 
     Column {
         id: hourLegend
-        anchors.bottom: parent.bottom
+        anchors.top: meteogram2.bottom
+        anchors.topMargin: 124
         anchors.bottomMargin: footerHeight + nextDaysVerticalMargin - 4
         // anchors.rightMargin: -2
         spacing: 1

@@ -1,80 +1,69 @@
+// File: ~/.local/share/plasma/plasmoids/weather.widget.plus/contents/ui/config/ConfigLogs.qml
+
 import QtQuick 2.15
 import QtQuick.Controls 2.15
-import QtQuick.Layouts 1.1
+import QtQuick.Layouts 1.15
+import QtQuick.Dialogs
 import org.kde.plasma.configuration 2.0
-import org.kde.kirigami as Kirigami
+import org.kde.kirigami 2.5 as Kirigami
 
 Item {
     property alias cfg_logPath: logPathField.text
-    property alias cfg_diaryLayoutType: diaryLayoutCombo.currentIndex
 
-    Column {
-        spacing: 8
+    FileDialog {
+        id: fileDialog
+        title: "Choose diary file location"
+        fileMode: FileDialog.SaveFile
+        defaultSuffix: "txt"
+        nameFilters: ["Text files (*.txt)", "All files (*)"]
+        onAccepted: {
+            var path = selectedFile.toString()
+            path = path.replace(/^file:\/\//, '')
+            logPathField.text = path
+        }
+    }
+
+    ColumnLayout {
+        spacing: Kirigami.Units.largeSpacing
+        anchors.fill: parent
 
         Label {
-            text: "Log directory"
+            text: "Diary File Location"
+            font.bold: true
+            font.pointSize: Kirigami.Theme.defaultFont.pointSize + 1
         }
 
-        TextField {
-            id: logPathField
-            placeholderText: "/home/x2/logs"
-        }
-
-        Item {
-            width: 1
-            height: 10
-        }
-
-        Label {
-            text: "Diary Display Format"
-        }
-
-        ComboBox {
-            id: diaryLayoutCombo
-            model: ["Option 1: Separate Lines", "Option 2: Combined Lines"]
-            currentIndex: 0
-        }
-
-        Item {
-            width: 1
-            height: 10
-        }
-
-        // Preview examples
-        GroupBox {
-            title: "Preview Examples"
+        RowLayout {
+            spacing: Kirigami.Units.smallSpacing
             Layout.fillWidth: true
 
-            Column {
-                anchors.fill: parent
-                anchors.margins: 8
-
-                Label {
-                    text: "Option 1:"
-                    font.bold: true
-                }
-                Label {
-                    text: "Fri, 23 Jan 2026\nWeather: Weather condition\nTemperature: 7°C\nHumidity: 98%\nPressure: 982 hPa\n\nno data entered!"
-                    font.family: "monospace"
-                    wrapMode: Text.Wrap
-                }
-
-                Item {
-                    width: 1
-                    height: 10
-                }
-
-                Label {
-                    text: "Option 2:"
-                    font.bold: true
-                }
-                Label {
-                    text: "Fri, 23 Jan 2026\nWeather: Weather condition - Temperature: 7°C\nHumidity: 98% - Pressure: 982 hPa\n\nno data entered!"
-                    font.family: "monospace"
-                    wrapMode: Text.Wrap
-                }
+            Label {
+                text: "Diary file:"
             }
+
+            TextField {
+                id: logPathField
+                placeholderText: "~/daily_weather_diary.txt"
+                Layout.fillWidth: true
+            }
+            
+            Button {
+                text: "Browse..."
+                icon.name: "document-open"
+                onClicked: fileDialog.open()
+            }
+        }
+        
+        Label {
+            text: "Full path to diary file (e.g., /home/username/daily_weather_diary.txt)\nLeave empty to use ~/weather_diary.txt"
+            font.pointSize: Kirigami.Theme.smallFont.pointSize
+            opacity: 0.7
+            wrapMode: Text.Wrap
+            Layout.fillWidth: true
+        }
+
+        Item {
+            Layout.fillHeight: true
         }
     }
 }
-
