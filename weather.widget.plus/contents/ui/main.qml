@@ -46,6 +46,16 @@ PlasmoidItem {
         connectedSources: ["Local"]
         interval: 0
     }
+    PlasmaCore.DataSource {
+        id: executable
+        engine: "executable"
+        connectedSources: []
+        onNewData: disconnectSource(sourceName)
+        
+        function exec(cmd) {
+            connectSource(cmd)
+        }
+    }
     FontLoader {
         source: "../fonts/weathericons-regular-webfont-2.0.11.ttf"
     }
@@ -606,7 +616,7 @@ PlasmoidItem {
             dbgprint("cacheKey for " + currentPlace.identifier + " is: " + currentPlace.cacheID)
             cacheData.alreadyLoadedFromCache = false
             loadDataFromInternet()
-            meteogramModelChanged = ! meteogramModelChanged
+            meteogramModelChanged = !meteogramModelChanged
         }
     }
 
@@ -757,7 +767,7 @@ PlasmoidItem {
     // X-Seti July 14 - 2025
 
     function updateAdditionalWeatherInfoText() {
-        if (additionalWeatherInfo === undefined || additionalWeatherInfo.nearFutureWeather.iconName === null || actualWeatherModel.count === 0) {
+        if (additionalWeatherInfo === undefined || additionalWeatherInfo.nearFutureWeather.iconName === null || meteogramModel.count === 0) {
             dbgprint('model not yet ready')
             return
         }
@@ -775,16 +785,16 @@ PlasmoidItem {
 
         var nearFutureWeather = additionalWeatherInfo.nearFutureWeather
         var futureWeatherIcon = IconTools.getIconCode(nearFutureWeather.iconName, currentProvider.providerId, getPartOfDayIndex())
-        var wind1 = Math.round(actualWeatherModel.get(0).windDirection)
+        var wind1 = Math.round(meteogramModel.get(0).windDirection)
         var windDirectionIcon = IconTools.getWindDirectionIconCode(wind1)
         var subText = ''
-        subText += '<br /><font size="4" style="font-family: weathericons;">' + windDirectionIcon + '</font><font size="4"> ' + wind1 + '\u00B0 &nbsp; @ ' + UnitUtils.getWindSpeedText(actualWeatherModel.get(0).windSpeedMps, windSpeedType) + '</font>'
-        subText += '<br /><font size="4">' + UnitUtils.getPressureText(actualWeatherModel.get(0).pressureHpa, pressureType) + '</font>'
+        subText += '<br /><font size="4" style="font-family: weathericons;">' + windDirectionIcon + '</font><font size="4"> ' + wind1 + '\u00B0 &nbsp; @ ' + UnitUtils.getWindSpeedText(meteogramModel.get(0).windSpeedMps, windSpeedType) + '</font>'
+        subText += '<br /><font size="4">' + UnitUtils.getPressureText(meteogramModel.get(0).pressureHpa, pressureType) + '</font>'
         subText += '<br /><table>'
-        if ((actualWeatherModel.get(0).humidity !== undefined) && (actualWeatherModel.get(0).cloudiness !== undefined)) {
+        if ((meteogramModel.get(0).humidity !== undefined) && (meteogramModel.get(0).cloudiness !== undefined)) {
             subText += '<tr>'
-            subText += '<td><font size="4"><font style="font-family: weathericons">\uf07a</font>&nbsp;' + actualWeatherModel.get(0).humidity + '%</font></td>'
-            subText += '<td><font size="4"><font style="font-family: weathericons">\uf013</font>&nbsp;' + actualWeatherModel.get(0).cloudiness + '%</font></td>'
+            subText += '<td><font size="4"><font style="font-family: weathericons">\uf07a</font>&nbsp;' + meteogramModel.get(0).humidity + '%</font></td>'
+            subText += '<td><font size="4"><font style="font-family: weathericons">\uf013</font>&nbsp;' + meteogramModel.get(0).cloudiness + '%</font></td>'
             subText += '</tr>'
             subText += '<tr><td>&nbsp;</td><td></td></tr>'
         }
@@ -805,23 +815,23 @@ PlasmoidItem {
 
     function refreshTooltipSubText() {
         dbgprint('refreshing sub text')
-        if (additionalWeatherInfo === undefined || additionalWeatherInfo.nearFutureWeather.iconName === null || actualWeatherModel.count === 0) {
+        if (additionalWeatherInfo === undefined || additionalWeatherInfo.nearFutureWeather.iconName === null || meteogramModel.count === 0) {
             dbgprint('model not yet ready')
             return
         }
         updateAdditionalWeatherInfoText()
         var nearFutureWeather = additionalWeatherInfo.nearFutureWeather
         var futureWeatherIcon = IconTools.getIconCode(nearFutureWeather.iconName, currentProvider.providerId, getPartOfDayIndex())
-        var wind1=Math.round(actualWeatherModel.get(0).windDirection)
+        var wind1=Math.round(meteogramModel.get(0).windDirection)
         var windDirectionIcon = IconTools.getWindDirectionIconCode(wind1)
         var subText = ''
-        subText += '<br /><font size="4" style="font-family: weathericons;">' + windDirectionIcon + '</font><font size="4"> ' + wind1 + '\u00B0 &nbsp; @ ' + UnitUtils.getWindSpeedText(actualWeatherModel.get(0).windSpeedMps, windSpeedType) + '</font>'
-        subText += '<br /><font size="4">' + UnitUtils.getPressureText(actualWeatherModel.get(0).pressureHpa, pressureType) + '</font>'
+        subText += '<br /><font size="4" style="font-family: weathericons;">' + windDirectionIcon + '</font><font size="4"> ' + wind1 + '\u00B0 &nbsp; @ ' + UnitUtils.getWindSpeedText(meteogramModel.get(0).windSpeedMps, windSpeedType) + '</font>'
+        subText += '<br /><font size="4">' + UnitUtils.getPressureText(meteogramModel.get(0).pressureHpa, pressureType) + '</font>'
         subText += '<br /><table>'
-        if ((actualWeatherModel.get(0).humidity !== undefined) && (actualWeatherModel.get(0).cloudiness !== undefined)) {
+        if ((meteogramModel.get(0).humidity !== undefined) && (meteogramModel.get(0).cloudiness !== undefined)) {
             subText += '<tr>'
-            subText += '<td><font size="4"><font style="font-family: weathericons">\uf07a</font>&nbsp;' + actualWeatherModel.get(0).humidity + '%</font></td>'
-            subText += '<td><font size="4"><font style="font-family: weathericons">\uf013</font>&nbsp;' + actualWeatherModel.get(0).cloudiness + '%</font></td>'
+            subText += '<td><font size="4"><font style="font-family: weathericons">\uf07a</font>&nbsp;' + meteogramModel.get(0).humidity + '%</font></td>'
+            subText += '<td><font size="4"><font style="font-family: weathericons">\uf013</font>&nbsp;' + meteogramModel.get(0).cloudiness + '%</font></td>'
             subText += '</tr>'
             subText += '<tr><td>&nbsp;</td><td></td></tr>'
         }
@@ -1190,7 +1200,7 @@ PlasmoidItem {
 
         // --- SET WALLPAPER VIA DBUS ---
         function setPlasmaWallpaper(path) {
-            if (!path) return
+            if (!path) return;
 
                 var escapedPath = path.replace(/"/g, '\\"')
                 var script = `
@@ -1204,7 +1214,8 @@ PlasmoidItem {
             `
 
             try {
-                qdbus org.kde.plasmashell /PlasmaShell org.kde.PlasmaShell.evaluateScript(script)
+                var cmd = "qdbus org.kde.plasmashell /PlasmaShell org.kde.PlasmaShell.evaluateScript \"" + script + "\""
+                executable.exec(cmd)
                 console.log("Wallpaper updated:", path, "brightness:", calculatedBrightness)
             } catch (e) {
                 console.error("DBus wallpaper error:", e.message)
@@ -1250,7 +1261,7 @@ PlasmoidItem {
         }
 
         // --- RAIN AND SNOW PARTICLES WITH WIND ALIGNMENT ---
-        property real windDirection: actualWeatherModel.count > 0 ? actualWeatherModel.get(0).windDirection : 0
+        property real windDirection: meteogramModel.count > 0 ? meteogramModel.get(0).windDirection : 0
 
         Item {
             id: rainContainer
@@ -1274,7 +1285,7 @@ PlasmoidItem {
                     sizeVariation: 3
                     lifeSpan: 1500
                     velocityFromAngle: 90
-                    velocityFromMagnitude: 110 + (actualWeatherModel.count > 0 ? actualWeatherModel.get(0).windSpeedMps * 8 : 0)
+                    velocityFromMagnitude: 110 + (meteogramModel.count > 0 ? meteogramModel.get(0).windSpeedMps * 8 : 0)
                     velocityVariation: 30
                 }
 
@@ -1309,7 +1320,7 @@ PlasmoidItem {
                     sizeVariation: 4
                     lifeSpan: 4000
                     velocityFromAngle: 90
-                    velocityFromMagnitude: 15 + (actualWeatherModel.count > 0 ? actualWeatherModel.get(0).windSpeedMps * 2 : 0)
+                    velocityFromMagnitude: 15 + (meteogramModel.count > 0 ? meteogramModel.get(0).windSpeedMps * 2 : 0)
                     velocityVariation: 30
                     rotationSpeed: 100
                     rotationSpeedVariation: 50
@@ -1353,7 +1364,7 @@ PlasmoidItem {
 
         // --- SOUND TRIGGERS ---
         function playSound(soundName) {
-            if (!atmosphereWidget.soundEnabled) return
+            if (!atmosphereWidget.soundEnabled) return;
 
                 switch (soundName) {
                     case "ding": hourlyDing.play(); break
@@ -1362,6 +1373,7 @@ PlasmoidItem {
                     case "snow": snowCrunch.play(); break
                 }
         }
+
 
         // --- UPDATE LOGIC ---
         Component.onCompleted: {
@@ -1376,45 +1388,21 @@ PlasmoidItem {
             // Initial wallpaper update
             applyWallpaperWithBrightness()
 
-            // Update every minute (for time changes)
-            Timer {
-                interval: 60 * 1000
-                repeat: true
-                running: true
-                onTriggered: {
-                    applyWallpaperWithBrightness()
-
-                    // Play ding on the hour
-                    var now = new Date()
-                    if (now.getMinutes() === 0) {
-                        playSound("ding")
-                    }
-
-                    // Trigger wind sound on high wind
-                    if (actualWeatherModel.count > 0) {
-                        var windSpeed = actualWeatherModel.get(0).windSpeedMps
-                        if (windSpeed > 7) {
-                            playSound("wind")
-                        }
-                    }
-                }
-            }
-
             // Watch weather condition changes
             if (currentProvider) {
                 currentProvider.onCurrentConditionChanged.connect(function() {
                     var cond = currentProvider.currentCondition.toLowerCase()
-                    if (cond.includes("rain") && !rainContainer.visible) playSound("rain")
-                        if (cond.includes("snow") && !snowContainer.visible) playSound("snow")
-                            applyWallpaperWithBrightness()
+                    if (cond.includes("rain") && !rainContainer.visible) playSound("rain");
+                    if (cond.includes("snow") && !snowContainer.visible) playSound("snow");
+                        applyWallpaperWithBrightness();
                 })
             }
 
             // Watch wind speed/direction changes
-            actualWeatherModel.onDataChanged.connect(function() {
-                if (actualWeatherModel.count > 0) {
-                    windDirection = actualWeatherModel.get(0).windDirection
-                    var windSpeed = actualWeatherModel.get(0).windSpeedMps
+            meteogramModel.onDataChanged.connect(function() {
+                if (meteogramModel.count > 0) {
+                    windDirection = meteogramModel.get(0).windDirection
+                    var windSpeed = meteogramModel.get(0).windSpeedMps
                     if (windSpeed > 7) {
                         playSound("wind")
                     }
@@ -1422,12 +1410,11 @@ PlasmoidItem {
             })
 
             // Ensure we get initial wind direction
-            if (actualWeatherModel.count > 0) {
-                windDirection = actualWeatherModel.get(0).windDirection
+            if (meteogramModel.count > 0) {
+                windDirection = meteogramModel.get(0).windDirection
             }
         }
     }
-}
 
     Timer {
         interval: 10000
