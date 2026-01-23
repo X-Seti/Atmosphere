@@ -718,7 +718,7 @@ PlasmoidItem {
 
     // Contextual Actions for System Tray Right-Click Menu
     Plasmoid.contextualActions: [
-        PlasmaComponents.Action {
+        PlasmaCore.Action {
             text: i18n("Add a weather notation")
             icon.name: "document-edit"
             onTriggered: {
@@ -734,7 +734,7 @@ PlasmoidItem {
                 showDiaryEntryDialog(tempWeatherData)
             }
         },
-        PlasmaComponents.Action {
+        PlasmaCore.Action {
             text: i18n("Settings")
             icon.name: "configure"
             onTriggered: plasmoid.expanded = !plasmoid.expanded
