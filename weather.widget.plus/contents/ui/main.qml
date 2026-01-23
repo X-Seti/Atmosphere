@@ -716,6 +716,30 @@ PlasmoidItem {
     }
 
 
+    // Contextual Actions for System Tray Right-Click Menu
+    Plasmoid.contextualActions: [
+        PlasmaComponents.Action {
+            text: i18n("Add a weather notation")
+            icon.name: "document-edit"
+            onTriggered: {
+                // Create temporary weather data for the diary entry
+                var tempWeatherData = {
+                    temperature: currentWeatherModel ? currentWeatherModel.temperature : "N/A",
+                    humidity: currentWeatherModel ? currentWeatherModel.humidity : "N/A",
+                    pressureHpa: currentWeatherModel ? currentWeatherModel.pressureHpa : "N/A",
+                    condition: currentWeatherModel ? "Current weather" : "No data"
+                }
+                
+                // Show the diary entry dialog with the current weather data
+                showDiaryEntryDialog(tempWeatherData)
+            }
+        },
+        PlasmaComponents.Action {
+            text: i18n("Settings")
+            icon.name: "configure"
+            onTriggered: plasmoid.expanded = !plasmoid.expanded
+        }
+    ]
     Timer {
         interval: 10000
         running: true
