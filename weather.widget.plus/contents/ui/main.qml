@@ -643,7 +643,6 @@ PlasmoidItem {
     PlasmaComponents.Dialog {
         id: diaryEntryDialog
         title: i18n("Add to Daily Diary")
-        flags: Qt.Dialog | Qt.WindowCloseButtonHint
         
         property var weatherData: null
         property alias mainItem: dialogContentItem  // Add alias for mainItem compatibility
