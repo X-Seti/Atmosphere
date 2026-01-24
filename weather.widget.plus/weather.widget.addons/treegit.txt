@@ -49,6 +49,7 @@
 │   ├── sl
 │   └── stripmeta_hw_amd64.bin
 ├── treegit.txt
-└── uninstall-addon.sh
+├── uninstall-addon.sh
+└── verify-addon.sh
 
-11 directories, 41 files
+11 directories, 42 files

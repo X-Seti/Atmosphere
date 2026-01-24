@@ -1,5 +1,4 @@
 #!/bin/bash
-
 set -e
 
 SRC="$(pwd)/addons/contents"
@@ -8,33 +7,29 @@ MAIN="$DEST/ui/main.qml"
 
 BACKUP="$DEST.BACKUP.$(date +%F-%H%M)"
 
-echo "== Weather Widget Plus Addon Installer =="
+echo "== Installing Weather Widget Plus Addon =="
 
-echo "[+] Backing up existing contents to:"
+echo "[+] Backup:"
 echo "    $BACKUP"
 cp -a "$DEST" "$BACKUP"
 
-echo "[+] Installing addon files..."
-cp -a "$SRC/code/"* "$DEST/code/"
-cp -a "$SRC/ui/"*   "$DEST/ui/"
-cp -a "$SRC/config/"* "$DEST/config/"
+echo "[+] Copying addon contents..."
+cp -a "$SRC/code/."   "$DEST/code/"
+cp -a "$SRC/ui/."     "$DEST/ui/"
+cp -a "$SRC/config/." "$DEST/config/"
 
 echo "[+] Patching imports..."
 
-# only add imports if not already present
+# add imports only if missing
 grep -q 'dailyState.js' "$MAIN" || sed -i '/import "..\/code\/unit-utils.js"/a \
 import "../code/diary.js" as Diary\nimport "../code/dailyState.js" as DailyState' "$MAIN"
 
-echo "[+] Patching function call..."
+echo "[+] Patching hook..."
 
-grep -q 'DailyState.handleWeather' "$MAIN" || sed -i '/refreshTooltipSubText()/a \
+grep -q 'DailyState.handleWeather(currentWeatherModel, currentPlace)' "$MAIN" || sed -i '/refreshTooltipSubText()/a \
         DailyState.handleWeather(currentWeatherModel, currentPlace)' "$MAIN"
 
 echo "[+] Restarting Plasma..."
 plasmareset
 
-echo "========================================"
-echo "Addon installed."
-echo "Backup stored at:"
-echo "$BACKUP"
-echo "========================================"
+echo "== Install complete =="
