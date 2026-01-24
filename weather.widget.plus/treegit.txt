@@ -1,0 +1,417 @@
+.
+├── contents
+│   ├── code
+│   │   ├── config-utils.js
+│   │   ├── dailyState.js
+│   │   ├── data-loader.js
+│   │   ├── db
+│   │   │   ├── AD.csv
+│   │   │   ├── AE.csv
+│   │   │   ├── AF.csv
+│   │   │   ├── AG.csv
+│   │   │   ├── AI.csv
+│   │   │   ├── AL.csv
+│   │   │   ├── AM.csv
+│   │   │   ├── AO.csv
+│   │   │   ├── AQ.csv
+│   │   │   ├── AR.csv
+│   │   │   ├── AS.csv
+│   │   │   ├── AT.csv
+│   │   │   ├── AU.csv
+│   │   │   ├── AW.csv
+│   │   │   ├── AX.csv
+│   │   │   ├── AZ.csv
+│   │   │   ├── BA.csv
+│   │   │   ├── BB.csv
+│   │   │   ├── BD.csv
+│   │   │   ├── BE.csv
+│   │   │   ├── BF.csv
+│   │   │   ├── BG.csv
+│   │   │   ├── BH.csv
+│   │   │   ├── BI.csv
+│   │   │   ├── BJ.csv
+│   │   │   ├── BL.csv
+│   │   │   ├── BM.csv
+│   │   │   ├── BN.csv
+│   │   │   ├── BO.csv
+│   │   │   ├── BQ.csv
+│   │   │   ├── BR.csv
+│   │   │   ├── BS.csv
+│   │   │   ├── BT.csv
+│   │   │   ├── BW.csv
+│   │   │   ├── BY.csv
+│   │   │   ├── BZ.csv
+│   │   │   ├── CA.csv
+│   │   │   ├── CC.csv
+│   │   │   ├── CD.csv
+│   │   │   ├── CF.csv
+│   │   │   ├── CG.csv
+│   │   │   ├── CH.csv
+│   │   │   ├── CI.csv
+│   │   │   ├── CK.csv
+│   │   │   ├── CL.csv
+│   │   │   ├── CM.csv
+│   │   │   ├── CN.csv
+│   │   │   ├── CO.csv
+│   │   │   ├── CR.csv
+│   │   │   ├── CU.csv
+│   │   │   ├── CV.csv
+│   │   │   ├── CW.csv
+│   │   │   ├── CX.csv
+│   │   │   ├── CY.csv
+│   │   │   ├── CZ.csv
+│   │   │   ├── DE.csv
+│   │   │   ├── DJ.csv
+│   │   │   ├── DK.csv
+│   │   │   ├── DM.csv
+│   │   │   ├── DO.csv
+│   │   │   ├── DZ.csv
+│   │   │   ├── EC.csv
+│   │   │   ├── EE.csv
+│   │   │   ├── EG.csv
+│   │   │   ├── EH.csv
+│   │   │   ├── ER.csv
+│   │   │   ├── ES.csv
+│   │   │   ├── ET.csv
+│   │   │   ├── FI.csv
+│   │   │   ├── FJ.csv
+│   │   │   ├── FK.csv
+│   │   │   ├── FM.csv
+│   │   │   ├── FO.csv
+│   │   │   ├── FR.csv
+│   │   │   ├── GA.csv
+│   │   │   ├── GB.csv
+│   │   │   ├── GD.csv
+│   │   │   ├── GE.csv
+│   │   │   ├── GF.csv
+│   │   │   ├── GG.csv
+│   │   │   ├── GH.csv
+│   │   │   ├── GI.csv
+│   │   │   ├── GL.csv
+│   │   │   ├── GM.csv
+│   │   │   ├── GN.csv
+│   │   │   ├── GP.csv
+│   │   │   ├── GQ.csv
+│   │   │   ├── GR.csv
+│   │   │   ├── GS.csv
+│   │   │   ├── GT.csv
+│   │   │   ├── GU.csv
+│   │   │   ├── GW.csv
+│   │   │   ├── GY.csv
+│   │   │   ├── HK.csv
+│   │   │   ├── HN.csv
+│   │   │   ├── HR.csv
+│   │   │   ├── HT.csv
+│   │   │   ├── HU.csv
+│   │   │   ├── ID.csv
+│   │   │   ├── IE.csv
+│   │   │   ├── IL.csv
+│   │   │   ├── IM.csv
+│   │   │   ├── IN.csv
+│   │   │   ├── IQ.csv
+│   │   │   ├── IR.csv
+│   │   │   ├── IS.csv
+│   │   │   ├── IT.csv
+│   │   │   ├── JE.csv
+│   │   │   ├── JM.csv
+│   │   │   ├── JO.csv
+│   │   │   ├── JP.csv
+│   │   │   ├── KE.csv
+│   │   │   ├── KG.csv
+│   │   │   ├── KH.csv
+│   │   │   ├── KI.csv
+│   │   │   ├── KM.csv
+│   │   │   ├── KN.csv
+│   │   │   ├── KP.csv
+│   │   │   ├── KR.csv
+│   │   │   ├── KW.csv
+│   │   │   ├── KY.csv
+│   │   │   ├── KZ.csv
+│   │   │   ├── LA.csv
+│   │   │   ├── LB.csv
+│   │   │   ├── LC.csv
+│   │   │   ├── LI.csv
+│   │   │   ├── LK.csv
+│   │   │   ├── LR.csv
+│   │   │   ├── LS.csv
+│   │   │   ├── LT.csv
+│   │   │   ├── LU.csv
+│   │   │   ├── LV.csv
+│   │   │   ├── LY.csv
+│   │   │   ├── MA.csv
+│   │   │   ├── MC.csv
+│   │   │   ├── MD.csv
+│   │   │   ├── ME.csv
+│   │   │   ├── MF.csv
+│   │   │   ├── MG.csv
+│   │   │   ├── MH.csv
+│   │   │   ├── MK.csv
+│   │   │   ├── ML.csv
+│   │   │   ├── MM.csv
+│   │   │   ├── MN.csv
+│   │   │   ├── MO.csv
+│   │   │   ├── MP.csv
+│   │   │   ├── MQ.csv
+│   │   │   ├── MR.csv
+│   │   │   ├── MS.csv
+│   │   │   ├── MT.csv
+│   │   │   ├── MU.csv
+│   │   │   ├── MV.csv
+│   │   │   ├── MW.csv
+│   │   │   ├── MX.csv
+│   │   │   ├── MY.csv
+│   │   │   ├── MZ.csv
+│   │   │   ├── NA.csv
+│   │   │   ├── NC.csv
+│   │   │   ├── NE.csv
+│   │   │   ├── NF.csv
+│   │   │   ├── NG.csv
+│   │   │   ├── NI.csv
+│   │   │   ├── NL.csv
+│   │   │   ├── NO.csv
+│   │   │   ├── NP.csv
+│   │   │   ├── NR.csv
+│   │   │   ├── NU.csv
+│   │   │   ├── NZ.csv
+│   │   │   ├── OM.csv
+│   │   │   ├── PA.csv
+│   │   │   ├── PE.csv
+│   │   │   ├── PF.csv
+│   │   │   ├── PG.csv
+│   │   │   ├── PH.csv
+│   │   │   ├── PK.csv
+│   │   │   ├── PL.csv
+│   │   │   ├── PM.csv
+│   │   │   ├── PN.csv
+│   │   │   ├── PR.csv
+│   │   │   ├── PS.csv
+│   │   │   ├── PT.csv
+│   │   │   ├── PW.csv
+│   │   │   ├── PY.csv
+│   │   │   ├── QA.csv
+│   │   │   ├── RE.csv
+│   │   │   ├── RO.csv
+│   │   │   ├── RS.csv
+│   │   │   ├── RU.csv
+│   │   │   ├── RW.csv
+│   │   │   ├── SA.csv
+│   │   │   ├── SB.csv
+│   │   │   ├── SC.csv
+│   │   │   ├── SD.csv
+│   │   │   ├── SE.csv
+│   │   │   ├── SG.csv
+│   │   │   ├── SH.csv
+│   │   │   ├── SI.csv
+│   │   │   ├── SJ.csv
+│   │   │   ├── SK.csv
+│   │   │   ├── SL.csv
+│   │   │   ├── SM.csv
+│   │   │   ├── SN.csv
+│   │   │   ├── SO.csv
+│   │   │   ├── SR.csv
+│   │   │   ├── SS.csv
+│   │   │   ├── ST.csv
+│   │   │   ├── SV.csv
+│   │   │   ├── SX.csv
+│   │   │   ├── SY.csv
+│   │   │   ├── SZ.csv
+│   │   │   ├── TC.csv
+│   │   │   ├── TD.csv
+│   │   │   ├── TF.csv
+│   │   │   ├── TG.csv
+│   │   │   ├── TH.csv
+│   │   │   ├── timezoneData.js
+│   │   │   ├── TJ.csv
+│   │   │   ├── TK.csv
+│   │   │   ├── TL.csv
+│   │   │   ├── TM.csv
+│   │   │   ├── TN.csv
+│   │   │   ├── TO.csv
+│   │   │   ├── TR.csv
+│   │   │   ├── TT.csv
+│   │   │   ├── TV.csv
+│   │   │   ├── TW.csv
+│   │   │   ├── TZ.csv
+│   │   │   ├── UA.csv
+│   │   │   ├── UG.csv
+│   │   │   ├── US.csv
+│   │   │   ├── UY.csv
+│   │   │   ├── UZ.csv
+│   │   │   ├── VA.csv
+│   │   │   ├── VC.csv
+│   │   │   ├── VE.csv
+│   │   │   ├── VG.csv
+│   │   │   ├── VI.csv
+│   │   │   ├── VN.csv
+│   │   │   ├── VU.csv
+│   │   │   ├── WF.csv
+│   │   │   ├── WS.csv
+│   │   │   ├── XK.csv
+│   │   │   ├── YE.csv
+│   │   │   ├── YT.csv
+│   │   │   ├── ZA.csv
+│   │   │   ├── ZM.csv
+│   │   │   └── ZW.csv
+│   │   ├── diary_altvers.js
+│   │   ├── diary.js
+│   │   ├── icons.js
+│   │   ├── model-utils.js
+│   │   ├── placesearch-helpers.js
+│   │   ├── timezoneData.js
+│   │   └── unit-utils.js
+│   ├── config
+│   │   ├── config.qml
+│   │   └── main.xml
+│   ├── fonts
+│   │   └── weathericons-regular-webfont-2.0.11.ttf
+│   ├── images
+│   │   ├── dark1.svg
+│   │   ├── dark2.svg
+│   │   ├── dark3.svg
+│   │   ├── dark4.svg
+│   │   ├── dark5.svg
+│   │   ├── light1.svg
+│   │   ├── light2.svg
+│   │   ├── light3.svg
+│   │   ├── light4.svg
+│   │   └── light5.svg
+│   ├── locale
+│   │   ├── bg
+│   │   │   └── LC_MESSAGES
+│   │   │       ├── plasma_applet_weather.widget.plus.mo
+│   │   │       └── Weather Widget Plus.mo
+│   │   ├── ca_ES
+│   │   │   └── LC_MESSAGES
+│   │   │       ├── plasma_applet_weather.widget.plus.mo
+│   │   │       └── Weather Widget Plus.mo
+│   │   ├── cs
+│   │   │   └── LC_MESSAGES
+│   │   │       ├── plasma_applet_weather.widget.plus.mo
+│   │   │       └── Weather Widget Plus.mo
+│   │   ├── de
+│   │   │   └── LC_MESSAGES
+│   │   │       ├── plasma_applet_weather.widget.plus.mo
+│   │   │       └── Weather Widget Plus.mo
+│   │   ├── en
+│   │   │   └── LC_MESSAGES
+│   │   │       ├── plasma_applet_weather.widget.plus.mo
+│   │   │       └── Weather Widget Plus.mo
+│   │   ├── es
+│   │   │   └── LC_MESSAGES
+│   │   │       ├── plasma_applet_weather.widget.plus.mo
+│   │   │       └── Weather Widget Plus.mo
+│   │   ├── fr
+│   │   │   └── LC_MESSAGES
+│   │   │       ├── plasma_applet_weather.widget.plus.mo
+│   │   │       └── Weather Widget Plus.mo
+│   │   ├── hu_HU
+│   │   │   └── LC_MESSAGES
+│   │   │       ├── plasma_applet_weather.widget.plus.mo
+│   │   │       └── Weather Widget Plus.mo
+│   │   ├── it_IT
+│   │   │   └── LC_MESSAGES
+│   │   │       ├── plasma_applet_weather.widget.plus.mo
+│   │   │       └── Weather Widget Plus.mo
+│   │   ├── lt
+│   │   │   └── LC_MESSAGES
+│   │   │       ├── plasma_applet_weather.widget.plus.mo
+│   │   │       └── Weather Widget Plus.mo
+│   │   ├── nb
+│   │   │   └── LC_MESSAGES
+│   │   │       ├── plasma_applet_weather.widget.plus.mo
+│   │   │       └── Weather Widget Plus.mo
+│   │   ├── nl
+│   │   │   └── LC_MESSAGES
+│   │   │       ├── plasma_applet_weather.widget.plus.mo
+│   │   │       └── Weather Widget Plus.mo
+│   │   ├── pl
+│   │   │   └── LC_MESSAGES
+│   │   │       ├── plasma_applet_weather.widget.plus.mo
+│   │   │       └── Weather Widget Plus.mo
+│   │   ├── pt_BR
+│   │   │   └── LC_MESSAGES
+│   │   │       ├── plasma_applet_weather.widget.plus.mo
+│   │   │       └── Weather Widget Plus.mo
+│   │   ├── ru
+│   │   │   └── LC_MESSAGES
+│   │   │       ├── plasma_applet_weather.widget.plus.mo
+│   │   │       └── Weather Widget Plus.mo
+│   │   ├── sv
+│   │   │   └── LC_MESSAGES
+│   │   │       ├── plasma_applet_weather.widget.plus.mo
+│   │   │       └── Weather Widget Plus.mo
+│   │   ├── uk
+│   │   │   └── LC_MESSAGES
+│   │   │       ├── plasma_applet_weather.widget.plus.mo
+│   │   │       └── Weather Widget Plus.mo
+│   │   ├── uk_UA
+│   │   │   └── LC_MESSAGES
+│   │   │       └── plasma_applet_weather.widget.plus.mo
+│   │   ├── zh_CN
+│   │   │   └── LC_MESSAGES
+│   │   │       ├── plasma_applet_weather.widget.plus.mo
+│   │   │       └── Weather Widget Plus.mo
+│   │   └── zh_TW
+│   │       └── LC_MESSAGES
+│   │           ├── plasma_applet_weather.widget.plus.mo
+│   │           └── Weather Widget Plus.mo
+│   └── ui
+│       ├── addons
+│       │   ├── comfortbar.qml
+│       │   ├── feelslike.qml
+│       │   ├── feelssimple.qml
+│       │   ├── fonticon.qml
+│       │   ├── mouseover.qml
+│       │   ├── weather_addon.qml
+│       │   ├── weathercontrol.qml
+│       │   └── weathereffect.qml
+│       ├── CompactIteminTray.qml
+│       ├── CompactItem.qml
+│       ├── CompactItemReverse.qml
+│       ├── CompactRepresentationInTray.qml
+│       ├── CompactRepresentation.qml
+│       ├── config
+│       │   ├── ConfigAppearance.qml
+│       │   ├── ConfigDiary.qml
+│       │   ├── ConfigEffects.qml
+│       │   ├── ConfigLayout.qml
+│       │   ├── ConfigLocation.qml
+│       │   ├── ConfigLogs.qml
+│       │   ├── ConfigMeteogram.qml
+│       │   └── ConfigUnits.qml
+│       ├── DiaryDialog.qml
+│       ├── effects
+│       │   ├── raindrop.svg
+│       │   ├── resources.qrc
+│       │   ├── samples.webp
+│       │   └── snowflake.svg
+│       ├── FullRepresentationInTray.qml
+│       ├── FullRepresentation.qml
+│       ├── images
+│       │   ├── dark1.svg
+│       │   ├── dark2.svg
+│       │   ├── dark3.svg
+│       │   ├── dark4.svg
+│       │   ├── dark5.svg
+│       │   ├── light1.svg
+│       │   ├── light2.svg
+│       │   ├── light3.svg
+│       │   ├── light4.svg
+│       │   └── light5.svg
+│       ├── main.qml
+│       ├── main.qml.bak
+│       ├── Meteogram.qml
+│       ├── NextDayItem.qml
+│       ├── NextDayPeriodItem.qml
+│       ├── providers
+│       │   ├── MetNo.qml
+│       │   ├── OpenMeteo.qml
+│       │   └── OpenWeatherMap.qml
+│       └── WeatherCache.qml
+├── metadata.desktop
+├── metadata.json
+├── state.json
+├── treegit.txt
+└── weather-widget-addons example.zip
+
+54 directories, 361 files
