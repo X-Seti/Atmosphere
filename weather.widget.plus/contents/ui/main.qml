@@ -712,7 +712,7 @@ PlasmoidItem {
                     }
 
                     Label {
-                        text: i18n("Add your health notes for today:")
+                        text: i18n("Add Notations:")
                         font.pointSize: Kirigami.Theme.defaultFont.pointSize + 2
                         font.weight: Font.DemiBold
                         Layout.fillWidth: true
@@ -779,7 +779,7 @@ PlasmoidItem {
                     
                     TextArea {
                         id: diaryTextInput
-                        placeholderText: i18n("e.g., not much sleep, Pain is very high 8/10. (in bed)")
+                        placeholderText: i18n("e.g., Storms, Cloudy, Very Overcast")
                         font.pointSize: Kirigami.Theme.defaultFont.pointSize + 1
                         wrapMode: TextEdit.Wrap
                         selectByMouse: true
@@ -1049,6 +1049,4 @@ PlasmoidItem {
 
         }
     }
-
-
 }
