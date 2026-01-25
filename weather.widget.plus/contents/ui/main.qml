@@ -1005,11 +1005,6 @@ PlasmoidItem {
                 showDiaryEntryDialog(tempWeatherData)
             }
         },
-        PlasmaCore.Action {
-            text: i18n("Settings")
-            icon.name: "configure"
-            onTriggered: plasmoid.expanded = !plasmoid.expanded
-        }
     ]
     Timer {
         interval: 10000
