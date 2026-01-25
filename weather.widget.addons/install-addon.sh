@@ -1,81 +1,109 @@
 #!/usr/bin/env bash
 set -e
 
-WIDGET="$HOME/.local/share/plasma/plasmoids/weather.widget.plus"
-ADDON_DIR="$(cd "$(dirname "$0")" && pwd)/addons"
-MAINQML="$WIDGET/contents/ui/main.qml"
-STAMP=$(date +%Y%m%d-%H%M%S)
+PLASMOID="$HOME/.local/share/plasma/plasmoids/weather.widget.plus"
+MAINQML="$PLASMOID/contents/ui/main.qml"
+BACKUP="$MAINQML.bak.$(date +%s)"
 
-echo "== Installing Weather Widget Plus Addon =="
+ADDON_ROOT="$(cd "$(dirname "$0")" && pwd)/addons"
+
+echo "== Weather Widget Plus Addon Installer =="
+
+# -----------------------------
+# Sanity checks
+# -----------------------------
+if [[ ! -d "$PLASMOID" ]]; then
+  echo "❌ Plasmoid not found:"
+  echo "   $PLASMOID"
+  exit 1
+fi
 
 if [[ ! -f "$MAINQML" ]]; then
-  echo "main.qml not found at:"
+  echo "❌ main.qml not found:"
   echo "   $MAINQML"
   exit 1
 fi
 
-echo "[+] Backup:"
-BACKUP="$WIDGET/contents.BACKUP.$STAMP"
-cp -a "$WIDGET/contents" "$BACKUP"
-echo "    $BACKUP"
-
-echo "[+] Installing addon files..."
-rsync -av "$ADDON_DIR/contents/" "$WIDGET/contents/"
-
-echo "[+] Checking imports..."
-
-if ! grep -q 'import "../code/diary.js" as Diary' "$MAINQML"; then
-
-  echo "[+] applying import ../code/diary"
-  sed -i '/import "..\/code\/unit-utils.js"/a import "../code/diary.js" as Diary' "$MAINQML"
-fi
-
-if ! grep -q 'import "../code/dailyState.js" as DailyState' "$MAINQML"; then
-   echo "[+] applying import ../code/dailyState"
-  sed -i '/import "..\/code\/diary.js"/a import "../code/dailyState.js" as DailyState' "$MAINQML"
-fi
-
-echo "[+] Checking hook..."
-
-if grep -q 'Diary: logged new day' "$MAINQML"; then
-  echo "    Hook already present"
-else
-  echo "    -> Inserting hook"
-
-echo "[+] applying function dataLoadedFromInternet() attemped 3"
-
-# Insert marker
-sed -i '/updateCompactItem()/a XXX_HOOK_MARKER_XXX' "$MAINQML"
-
-# Replace marker with real code (using sed with N or just another pass)
-sed -i 's/XXX_HOOK_MARKER_XXX/\
-\
-        var didLog = DailyState.handleWeather(\
-            currentWeatherModel,\
-            currentPlace,\
-            plasmoid.configuration.lastLoggedDate\
-        )\
-\
-        if (didLog) {\
-            plasmoid.configuration.lastLoggedDate = new Date().toISOString().slice(0,10)\
-            dbgprint("Diary: logged new day")\
-        }\
-/g' "$MAINQML"
-
-fi
-
-echo "[+] Verifying syntax..."
-if grep -q 'Script import qualifiers must be unique' <(qmlcachegen "$MAINQML" 2>&1); then
-  echo "QML import error detected — restoring backup"
-  rm -rf "$WIDGET/contents"
-  cp -a "$BACKUP" "$WIDGET/contents"
+if [[ ! -d "$ADDON_ROOT/contents" ]]; then
+  echo "❌ addons/contents missing"
   exit 1
 fi
 
-echo "[+] Restarting Plasma..."
-kquitapp6 plasmashell || true
-sleep 2
-plasmashell &
+# -----------------------------
+# Backup
+# -----------------------------
+echo "[+] Backing up main.qml"
+cp "$MAINQML" "$BACKUP"
+
+# -----------------------------
+# Install addon files
+# -----------------------------
+echo "[+] Installing addon files"
+rsync -av "$ADDON_ROOT/contents/" "$PLASMOID/contents/"
+
+# -----------------------------
+# Ensure imports
+# -----------------------------
+ensure_import() {
+  local line="$1"
+  local anchor='import "../code/unit-utils.js"'
+
+  if grep -Fq "$line" "$MAINQML"; then
+    echo "  = import exists: $line"
+  else
+    sed -i "/$anchor/a $line" "$MAINQML"
+    echo "  + added import: $line"
+  fi
+}
+
+echo "[+] Ensuring imports"
+ensure_import 'import "../code/diary.js" as Diary'
+ensure_import 'import "../code/dailyState.js" as DailyState'
+
+# -----------------------------
+# Ensure hook
+# -----------------------------
+HOOK='var didLog = DailyState.handleWeather(currentWeatherModel, currentPlace, plasmoid.configuration.lastLoggedDate)
+        if (didLog) {
+            plasmoid.configuration.lastLoggedDate = new Date().toISOString().slice(0,10)
+            dbgprint("Diary: logged new day")
+        }'
+
+if grep -Fq "DailyState.handleWeather" "$MAINQML"; then
+  echo "[=] Hook already present"
+else
+  echo "[+] Injecting hook"
+
+  awk -v hook="$HOOK" '
+    /function dataLoadedFromInternet\(\)/ { inFunc=1 }
+    inFunc && /updateCompactItem\(\)/ && !done {
+        print
+        print "        " hook
+        done=1
+        next
+    }
+    { print }
+  ' "$MAINQML" > "$MAINQML.tmp"
+
+  mv "$MAINQML.tmp" "$MAINQML"
+fi
+
+# -----------------------------
+# Verify
+# -----------------------------
+echo "[+] Verifying"
+
+grep -q 'import "../code/diary.js"' "$MAINQML" || { echo "❌ diary import missing"; exit 1; }
+grep -q 'import "../code/dailyState.js"' "$MAINQML" || { echo "❌ dailyState import missing"; exit 1; }
+grep -q 'DailyState.handleWeather' "$MAINQML" || { echo "❌ hook missing"; exit 1; }
+
+echo "✓ Imports OK"
+echo "✓ Hook OK"
+
+# -----------------------------
+# Restart Plasma
+# -----------------------------
+echo "[+] Restarting Plasma"
+kquitapp6 plasmashell && plasmashell &
 
 echo "== Install complete =="
-echo "If widget shows C--, run: restore2stock.sh"

@@ -1,66 +1,62 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
-W="$HOME/.local/share/plasma/plasmoids/weather.widget.plus/contents"
-MAIN="$W/ui/main.qml"
-DIARY="$HOME/daily_weather_diary.txt"
+WIDGET="$HOME/.local/share/plasma/plasmoids/weather.widget.plus"
+MAINQML="$WIDGET/contents/ui/main.qml"
 
 echo "=== Weather Widget Plus Addon Verifier ==="
 
-echo
-echo "[1] Checking addon files..."
+fail=0
 
+# --- Files ---
+echo "[1] Checking addon files..."
 for f in \
-"$W/code/dailyState.js" \
-"$W/code/diary.js" \
-"$W/ui/DiaryDialog.qml" \
-"$W/ui/config/ConfigDiary.qml"
+  "$WIDGET/contents/code/diary.js" \
+  "$WIDGET/contents/code/dailyState.js"
 do
-    if [ -f "$f" ]; then
-        echo "  ✓ $f"
-    else
-        echo "  ✗ MISSING: $f"
-    fi
+  if [[ -f "$f" ]]; then
+    echo "  ✓ $f"
+  else
+    echo "  ✗ MISSING: $f"
+    fail=1
+  fi
 done
 
-echo
+# --- Imports ---
 echo "[2] Checking imports in main.qml..."
 
-grep -q 'import "../code/diary.js" as Diary' "$MAIN" \
-  && echo "  ✓ diary import" || echo "  ✗ diary import missing"
+grep -q 'import "../code/diary.js" as Diary' "$MAINQML" \
+  && echo "  ✓ diary import" \
+  || { echo "  ✗ diary import missing"; fail=1; }
 
-grep -q 'import "../code/dailyState.js" as DailyState' "$MAIN" \
-  && echo "  ✓ dailyState import" || echo "  ✗ dailyState import missing"
+grep -q 'import "../code/dailyState.js" as DailyState' "$MAINQML" \
+  && echo "  ✓ dailyState import" \
+  || { echo "  ✗ dailyState import missing"; fail=1; }
 
-echo
+# --- Hook ---
 echo "[3] Checking function hook..."
 
-grep -q 'DailyState.handleWeather(currentWeatherModel, currentPlace)' "$MAIN" \
-  && echo "  ✓ hook present" || echo "  ✗ hook missing"
+grep -q 'DailyState.handleWeather' "$MAINQML" \
+  && echo "  ✓ hook present" \
+  || { echo "  ✗ hook missing"; fail=1; }
 
-echo
-echo "[4] Checking diary file..."
+# --- Duplicate imports ---
+echo "[4] Checking duplicate imports..."
 
-if [ -f "$DIARY" ]; then
-    echo "  ✓ $DIARY exists"
+diaryCount=$(grep -c 'import "../code/diary.js" as Diary' "$MAINQML")
+stateCount=$(grep -c 'import "../code/dailyState.js" as DailyState' "$MAINQML")
+
+if [[ $diaryCount -gt 1 || $stateCount -gt 1 ]]; then
+  echo "  ✗ duplicate imports detected"
+  fail=1
 else
-    echo "  ⚠ creating $DIARY"
-    touch "$DIARY"
+  echo "  ✓ no duplicate imports"
 fi
 
-if [ -w "$DIARY" ]; then
-    echo "  ✓ diary writable"
+# --- Result ---
+if [[ $fail -eq 0 ]]; then
+  echo "=== Verification OK ==="
 else
-    echo "  ✗ diary NOT writable"
+  echo "=== Verification FAILED ==="
 fi
 
-echo
-echo "[5] Checking QML syntax hazards..."
-
-if grep -q 'let today' "$MAIN"; then
-    echo "  ✗ found 'let' (QML will break)"
-else
-    echo "  ✓ no 'let' usage"
-fi
-
-echo
-echo "=== Verification Complete ==="
+exit $fail

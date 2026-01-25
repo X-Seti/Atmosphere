@@ -1,21 +1,14 @@
 .pragma library
-.import "diary.js" as Diary
 
-function handleWeather(model, place, plasmoid) {
-    if (!model || model.temperature === -9999)
-        return
+function today() {
+    return new Date().toISOString().slice(0, 10)
+}
 
-    var today = new Date().toISOString().slice(0,10)
+function shouldLogWeather(cfg) {
+    return cfg.lastLoggedDate !== today()
+}
 
-    if (plasmoid.configuration.lastLoggedDate === today)
-        return
-
-    Diary.appendWeather({
-        temperature: model.temperature,
-        humidity: model.humidity,
-        pressureHpa: model.pressureHpa,
-        condition: model.iconName
-    })
-
-    plasmoid.configuration.lastLoggedDate = today
+function shouldPrompt(cfg, popupHour) {
+    let hour = new Date().getHours()
+    return hour >= popupHour && cfg.lastPromptDate !== today()
 }
