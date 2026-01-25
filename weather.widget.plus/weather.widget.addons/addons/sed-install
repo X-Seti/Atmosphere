@@ -1,6 +1,0 @@
-sed 2 import after the others
-import "../code/diary.js" as Diary
-import "../code/dailyState.js" as DailyState
-
-And inside dataLoadedFromInternet() (after weather updates):
-DailyState.handleWeather(currentWeatherModel, currentPlace)
