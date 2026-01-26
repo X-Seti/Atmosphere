@@ -1,3 +1,5 @@
+dont add this yet, leftovers.
+
 // --- FEELS LIKE TEMPERATURE ---
 property real feelsLikeTemp: {
     var temp = actualWeatherModel.count > 0 ? actualWeatherModel.get(0).temperature : 0

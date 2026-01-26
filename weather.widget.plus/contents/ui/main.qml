@@ -29,8 +29,7 @@ import "../code/config-utils.js" as ConfigUtils
 import "../code/icons.js" as IconTools
 import "../code/unit-utils.js" as UnitUtils
 import "../code/timezoneData.js" as TZ
-import "../code/diary.js" as Diary
-import "../code/dailyState.js" as State
+
 
 PlasmoidItem {
     id: main
@@ -862,7 +861,7 @@ PlasmoidItem {
                             console.log("Layout type:", plasmoid.configuration.diaryLayoutType)
                             console.log("Executable available:", !!executable)
                             
-                            statusLabel.text = "💾 Saving..."
+                            statusLabel.text = " Saving..."
                             statusLabel.visible = true
                             
                             try {
@@ -876,7 +875,7 @@ PlasmoidItem {
                                 )
                                 console.log("✓ Diary.appendWeather completed")
                                 console.log("Data should be saved to:", diaryLogPath || "~/weather_diary.txt")
-                                statusLabel.text = "✅ Saved to: " + (diaryLogPath || "~/weather_diary.txt")
+                                statusLabel.text = " Saved to: " + (diaryLogPath || "~/weather_diary.txt")
                             } catch (e) {
                                 console.error("❌ Save error:", e.message)
                                 console.error("Stack:", e.stack)
@@ -953,7 +952,6 @@ PlasmoidItem {
             }
         }
     }
-
 
     // === AUTOMATIC DIARY POPUP TIMER ===
     Timer {

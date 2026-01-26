@@ -88,6 +88,36 @@ else
   mv "$MAINQML.tmp" "$MAINQML"
 fi
 
+if ! grep -q "=== DIARY LOGGING - First Patch ===" "$MAINQML"; then
+  sed -i '/dbgprint("meteogramModelChanged:" \+ meteogramModelChanged)/,/saveToCache()/{
+    /saveToCache()/i\
+   // - DIARY LOGGING - First Patch\
+        console.log("DEBUG: Checking diary conditions - diaryEnabled:", diaryLoggingEnabled, "weatherModel exists:", !!currentWeatherModel)\
+        if (!currentWeatherModel || currentWeatherModel.temperature === -9999) {\
+            console.log("DEBUG: Weather model not ready - exists:", !!currentWeatherModel, "temp:", currentWeatherModel ? currentWeatherModel.temperature : "N/A")\
+            dbgprint("Diary: weather model not ready yet")\
+            saveToCache()\
+            return\
+        }\
+\
+        var today = new Date().toISOString().slice(0, 10)\
+        console.log("DEBUG: Date check - today:", today, "lastLogged:", plasmoid.configuration.lastLoggedDate || "(never)", "different:", (plasmoid.configuration.lastLoggedDate || "") !== today)\
+        if (diaryLoggingEnabled && (plasmoid.configuration.lastLoggedDate || "") !== today) {\
+            console.log("DEBUG: Opening diary dialog!")\
+            showDiaryEntryDialog({\
+                temperature: currentWeatherModel.temperature,\
+                humidity: currentWeatherModel.humidity,\
+                pressureHpa: currentWeatherModel.pressureHpa,\
+                condition: "Weather condition"\
+            })\
+            plasmoid.configuration.lastLoggedDate = today\
+        }\
+  }' "$MAINQML"
+else
+  echo "Patch 1 already applied"
+fi
+
+
 # -----------------------------
 # Verify
 # -----------------------------
