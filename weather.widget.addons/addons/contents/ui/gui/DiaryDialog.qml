@@ -1,3 +1,4 @@
+// Belongs in ..contents/ui/gui/DiaryDialog.qml version 10
 /*
  * X-Seti - Jan 25 2025 - Addons for Weather Widget Plus (Credit - Martin Kotelnik)
  *
@@ -13,53 +14,62 @@
  * along with this program.  If not, see <http: //www.gnu.org/licenses/>.
 */
 
-Insert After: "import "../code/icons.js" as IconTools"
-import "../code/diary.js" as Diary
-import "../code/dailyState.js" as State
+//import QtQuick 2.15
+//import QtQuick.Layouts 1.15
+//import QtQuick.Controls 2.15
+//import QtQuick.Window 2.15
 
+//import org.kde.plasma.plasmoid 2.0
+//import org.kde.plasma.core 2.0 as PlasmaCore
+//import org.kde.kirigami 2.5 as Kirigami
+//import org.kde.plasma.components 3.0 as PlasmaComponents
+//import org.kde.plasma.plasma5support as Plasma5Support
 
-Insert between: "        dbgprint("meteogramModelChanged:" + meteogramModelChanged)" & "            saveToCache()"
+import QtQuick 2.15
+import QtQuick.Layouts
+import QtQuick.Window 2.15
+import org.kde.plasma.plasmoid
+import org.kde.plasma.core as PlasmaCore
+import QtQuick.Controls
+import org.kde.plasma.components 3.0 as PlasmaComponents
+import org.kde.plasma.plasma5support as Plasma5Support
+import org.kde.kirigami as Kirigami
 
+import "../../code/data-loader.js" as DataLoader
+import "../../code/config-utils.js" as ConfigUtils
+import "../../code/icons.js" as IconTools
+import "../../code/unit-utils.js" as UnitUtils
+import "../../code/timezoneData.js" as TZ
+import "../../code/diary.js" as Diary
+import "../../code/dailyState.js" as State
 
-    // === DIARY LOGGING ===
-    console.log("DEBUG: Checking diary conditions - diaryEnabled:", diaryLoggingEnabled, "weatherModel exists:", !!currentWeatherModel)
-    if (!currentWeatherModel || currentWeatherModel.temperature === -9999) {
-        console.log("DEBUG: Weather model not ready - exists:", !!currentWeatherModel, "temp:", currentWeatherModel ? currentWeatherModel.temperature : "N/A")
-        dbgprint("Diary: weather model not ready yet")
-        saveToCache()
-        return
-    }
+Item {
 
-    var today = new Date().toISOString().slice(0, 10)
-    console.log("DEBUG: Date check - today:", today, "lastLogged:", plasmoid.configuration.lastLoggedDate || "(never)", "different:", (plasmoid.configuration.lastLoggedDate || "") !== today)
-    if (diaryLoggingEnabled && (plasmoid.configuration.lastLoggedDate || "") !== today) {
-        console.log("DEBUG: Opening diary dialog!")
-        showDiaryEntryDialog({
-            temperature: currentWeatherModel.temperature,
-            humidity: currentWeatherModel.humidity,
-            pressureHpa: currentWeatherModel.pressureHpa,
-            condition: "Weather condition"
-        })
-        plasmoid.configuration.lastLoggedDate = today
-    }
+    // === CONFIG PROPERTIES (imported from main plasmoid) ===
+    property bool diaryLoggingEnabled: plasmoid.configuration.diaryLoggingEnabled
+    property bool diaryAutoPopupEnabled: plasmoid.configuration.diaryAutoPopupEnabled
+    property int diaryAutoPopupHour: plasmoid.configuration.diaryAutoPopupHour
+    property string diaryLogPath: plasmoid.configuration.logPath
+    property string lastAutoPopupDate: plasmoid.configuration.lastAutoPopupDate
 
+    // executable is provided by main.qml via context
+    property var executable
 
-    between:  "diaryDialogWindow.requestActivate()
-    }" & "    Timer {"
-
-
-    // === DIARY FUNCTIONS ===
+    // = DIARY FUNCTIONS - Vers 2
     function showDiaryEntryDialog(weatherData) {
         if (!plasmoid.configuration.diaryLoggingEnabled) {
             return
         }
         diaryDialogWindow.weatherData = weatherData
         diaryDialogWindow.show()
-        diaryDialogWindow.raise()
-        diaryDialogWindow.requestActivate()
+        if (diaryDialogWindow.raise)
+            diaryDialogWindow.raise()
+
+        if (diaryDialogWindow.requestActivate)
+            diaryDialogWindow.requestActivate()
     }
 
-    // === DIARY DIALOG WINDOW ===
+    // = DIARY DIALOG WINDOW - Vers 4
     Window {
         id: diaryDialogWindow
 
@@ -109,7 +119,7 @@ Insert between: "        dbgprint("meteogramModelChanged:" + meteogramModelChang
                 }
             }
 
-            // Weather info banner
+            // Weather info banner - Vers 1
             Rectangle {
                 Layout.fillWidth: true
                 Layout.preferredHeight: 50
@@ -124,7 +134,7 @@ Insert between: "        dbgprint("meteogramModelChanged:" + meteogramModelChang
                     spacing: 20
 
                     Label {
-                        text: " " + (diaryDialogWindow.weatherData ? diaryDialogWindow.weatherData.temperature + "°" : "N/A")
+                        text: "🌡️ " + (diaryDialogWindow.weatherData ? diaryDialogWindow.weatherData.temperature + "°" : "N/A")
                         font.pointSize: Kirigami.Theme.defaultFont.pointSize + 2
                         font.bold: true
                     }
@@ -136,7 +146,7 @@ Insert between: "        dbgprint("meteogramModelChanged:" + meteogramModelChang
                     }
 
                     Label {
-                        text: " " + (diaryDialogWindow.weatherData ? diaryDialogWindow.weatherData.humidity + "%" : "N/A")
+                        text: "💧 " + (diaryDialogWindow.weatherData ? diaryDialogWindow.weatherData.humidity + "%" : "N/A")
                         font.pointSize: Kirigami.Theme.defaultFont.pointSize + 2
                         font.bold: true
                     }
@@ -148,7 +158,7 @@ Insert between: "        dbgprint("meteogramModelChanged:" + meteogramModelChang
                     }
 
                     Label {
-                        text: " " + (diaryDialogWindow.weatherData ? diaryDialogWindow.weatherData.pressureHpa + " hPa" : "N/A")
+                        text: "🔽 " + (diaryDialogWindow.weatherData ? diaryDialogWindow.weatherData.pressureHpa + " hPa" : "N/A")
                         font.pointSize: Kirigami.Theme.defaultFont.pointSize + 2
                         font.bold: true
                     }
@@ -159,7 +169,7 @@ Insert between: "        dbgprint("meteogramModelChanged:" + meteogramModelChang
                 }
             }
 
-            // Text input area
+            // Text input area - Vers 2
             ScrollView {
                 Layout.fillWidth: true
                 Layout.fillHeight: true
@@ -195,9 +205,9 @@ Insert between: "        dbgprint("meteogramModelChanged:" + meteogramModelChang
                 }
             }
 
-            // Help text
+            // Help text - Vers 1
             Label {
-                text: i18n(" Tip: Press Ctrl+Enter to save quickly, Esc to skip")
+                text: i18n("Tip: Press Ctrl+Enter to save quickly, Esc to skip")
                 font.pointSize: Kirigami.Theme.smallFont.pointSize
                 opacity: 0.7
                 Layout.fillWidth: true
@@ -250,7 +260,7 @@ Insert between: "        dbgprint("meteogramModelChanged:" + meteogramModelChang
                         console.log("Layout type:", plasmoid.configuration.diaryLayoutType)
                         console.log("Executable available:", !!executable)
 
-                        statusLabel.text = " Saving..."
+                        statusLabel.text = "Saving..."
                         statusLabel.visible = true
 
                         try {
@@ -264,11 +274,11 @@ Insert between: "        dbgprint("meteogramModelChanged:" + meteogramModelChang
                             )
                             console.log("✓ Diary.appendWeather completed")
                             console.log("Data should be saved to:", diaryLogPath || "~/weather_diary.txt")
-                            statusLabel.text = " Saved to: " + (diaryLogPath || "~/weather_diary.txt")
+                            statusLabel.text = "Saved to: " + (diaryLogPath || "~/weather_diary.txt")
                         } catch (e) {
-                            console.error("❌ Save error:", e.message)
+                            console.error("Save error:", e.message)
                             console.error("Stack:", e.stack)
-                            statusLabel.text = "❌ Error: " + e.message
+                            statusLabel.text = "Error: " + e.message
                         }
 
                         console.log("=====================================================")
@@ -286,7 +296,7 @@ Insert between: "        dbgprint("meteogramModelChanged:" + meteogramModelChang
         function acceptDialog() {
             console.log("SAVE CLICKED - STARTING")
 
-            statusLabel.text = " Saving..."
+            statusLabel.text = "Saving..."
             statusLabel.visible = true
             console.log("Set status to Saving...")
 
@@ -299,7 +309,7 @@ Insert between: "        dbgprint("meteogramModelChanged:" + meteogramModelChang
             // }
 
             console.log("Showing success message...")
-            statusLabel.text = " Notations saved!"
+            statusLabel.text = "Notations saved!"
             statusLabel.color = Kirigami.Theme.positiveTextColor
 
             console.log("Starting timer...")
@@ -322,7 +332,7 @@ Insert between: "        dbgprint("meteogramModelChanged:" + meteogramModelChang
 
         function rejectDialog() {
             console.log("SKIP CLICKED - CLOSING IMMEDIATELY")
-            statusLabel.text = " Skipping..."
+            statusLabel.text = "Skipping..."
             statusLabel.visible = true
 
             // TEMPORARILY SKIP THE DIARY SAVE TO TEST
@@ -342,7 +352,8 @@ Insert between: "        dbgprint("meteogramModelChanged:" + meteogramModelChang
         }
     }
 
-    // === AUTOMATIC DIARY POPUP TIMER ===
+
+    // === AUTOMATIC DIARY POPUP TIMER - Vers 2
     Timer {
         id: autoPopupTimer
         interval: 60000 // Check every minute
@@ -361,11 +372,12 @@ Insert between: "        dbgprint("meteogramModelChanged:" + meteogramModelChang
                     temperature: currentWeatherModel ? currentWeatherModel.temperature : "N/A",
                     humidity: currentWeatherModel ? currentWeatherModel.humidity : "N/A",
                     pressureHpa: currentWeatherModel ? currentWeatherModel.pressureHpa : "N/A",
-                    condition: currentWeatherModel ? "Current weather" : "No data"
+                    condition: currentWeatherModel ? currentWeatherModel.condition : "No data"
                 }
 
                 // Show the diary entry dialog
                 showDiaryEntryDialog(tempWeatherData)
+                diaryDialog.showDiaryEntryDialog(tempWeatherData)
 
                 // Update the last popup date
                 plasmoid.configuration.lastAutoPopupDate = currentDateStr
@@ -374,22 +386,31 @@ Insert between: "        dbgprint("meteogramModelChanged:" + meteogramModelChang
         }
     }
 
-    // Contextual Actions for System Tray Right-Click Menu
+    // Vers 3
     Plasmoid.contextualActions: [
         PlasmaCore.Action {
             text: i18n("Add a weather notation")
             icon.name: "document-edit"
             onTriggered: {
-                // Create temporary weather data for the diary entry
                 var tempWeatherData = {
                     temperature: currentWeatherModel ? currentWeatherModel.temperature : "N/A",
                     humidity: currentWeatherModel ? currentWeatherModel.humidity : "N/A",
                     pressureHpa: currentWeatherModel ? currentWeatherModel.pressureHpa : "N/A",
-                    condition: currentWeatherModel ? "Current weather" : "No data"
+                    condition: currentWeatherModel ? currentWeatherModel.condition : "No data"
                 }
-
-                // Show the diary entry dialog with the current weather data
-                showDiaryEntryDialog(tempWeatherData)
+                diaryDialog.showDiaryEntryDialog(tempWeatherData)
             }
         },
+        PlasmaCore.Action {
+            text: i18n("Show notation log")
+            icon.name: "document-open"
+            onTriggered: {
+                Diary.openLogFile(
+                    plasmoid.configuration.logPath,
+                    plasmoid.configuration.diaryEditorType,
+                    plasmoid.configuration.diaryCustomEditor
+                )
+            }
+        }
     ]
+}

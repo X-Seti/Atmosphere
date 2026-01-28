@@ -1,14 +1,36 @@
+// ..contents/code/dailyState.js
+/*
+ * X-Seti - Jan 25 2025 - Addons for Weather Widget Plus (Credit - Martin Kotelnik)
+ *
+ * This program is free software; you can redistribute it and/or modify it under the terms of the GNU
+ * General Public License as published by the Free Software Foundation; either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without
+ * even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 .pragma library
 
+
+// Return today's date as YYYY-MM-DD
 function today() {
     return new Date().toISOString().slice(0, 10)
 }
 
+
+// Check if weather should be logged today
 function shouldLogWeather(cfg) {
     return cfg.lastLoggedDate !== today()
 }
 
+
+// Check if popup should be shown at or after the given hour
 function shouldPrompt(cfg, popupHour) {
-    let hour = new Date().getHours()
+    var hour = new Date().getHours()
     return hour >= popupHour && cfg.lastPromptDate !== today()
 }

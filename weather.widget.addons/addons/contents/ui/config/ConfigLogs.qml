@@ -1,10 +1,22 @@
-// File: ~/.local/share/plasma/plasmoids/weather.widget.plus/contents/ui/config/ConfigLogs.qml
+// Belongs in ..contents/ui/config/ConfigLogs.qml
+/*
+ * X-Seti - Jan 25 2025 - Addons for Weather Widget Plus (Credit - Martin Kotelnik)
+ *
+ * This program is free software; you can redistribute it and/or modify it under the terms of the GNU
+ * General Public License as published by the Free Software Foundation; either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without
+ * even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
 
 import QtQuick 2.15
 import QtQuick.Controls 2.15
-import QtQuick.Layouts 1.15
 import QtQuick.Dialogs
-import org.kde.plasma.configuration 2.0
 import org.kde.kirigami 2.5 as Kirigami
 
 Item {
@@ -15,55 +27,34 @@ Item {
         title: "Choose diary file location"
         fileMode: FileDialog.SaveFile
         defaultSuffix: "txt"
-        nameFilters: ["Text files (*.txt)", "All files (*)"]
-        onAccepted: {
-            var path = selectedFile.toString()
-            path = path.replace(/^file:\/\//, '')
-            logPathField.text = path
-        }
+            nameFilters: ["Text files (*.txt)", "All files (*)"]
+
+            onAccepted: {
+                var path = selectedFile.toString()
+                path = path.replace(/^file:\/\//, "")
+                logPathField.text = path
+            }
     }
 
-    ColumnLayout {
-        spacing: Kirigami.Units.largeSpacing
-        anchors.fill: parent
+    Kirigami.FormLayout {
 
-        Label {
-            text: "Diary File Location"
-            font.bold: true
-            font.pointSize: Kirigami.Theme.defaultFont.pointSize + 1
+        TextField {
+            id: logPathField
+            placeholderText: "/home/username/weather_diary.txt"
+            Kirigami.FormData.label: "Diary file:"
         }
 
-        RowLayout {
-            spacing: Kirigami.Units.smallSpacing
-            Layout.fillWidth: true
-
-            Label {
-                text: "Diary file:"
-            }
-
-            TextField {
-                id: logPathField
-                placeholderText: "~/daily_weather_diary.txt"
-                Layout.fillWidth: true
-            }
-            
-            Button {
-                text: "Browse..."
-                icon.name: "document-open"
-                onClicked: fileDialog.open()
-            }
+        Button {
+            text: "Browse…"
+            icon.name: "document-open"
+            onClicked: fileDialog.open()
         }
-        
+
         Label {
-            text: "Full path to diary file (e.g., /home/username/daily_weather_diary.txt)\nLeave empty to use ~/weather_diary.txt"
-            font.pointSize: Kirigami.Theme.smallFont.pointSize
-            opacity: 0.7
+            text: "Leave empty to use ~/weather_diary.txt"
             wrapMode: Text.Wrap
-            Layout.fillWidth: true
-        }
-
-        Item {
-            Layout.fillHeight: true
+            opacity: 0.7
+            Kirigami.FormData.isSection: true
         }
     }
 }

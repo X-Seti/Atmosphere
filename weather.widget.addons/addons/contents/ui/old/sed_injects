@@ -1,0 +1,115 @@
+if ! grep -q "=== DIARY LOGGING - First Patch ===" "$MAINQML"; then
+  sed -i '/dbgprint("meteogramModelChanged:" \+ meteogramModelChanged)/,/saveToCache()/{
+    /saveToCache()/i\
+        // === DIARY LOGGING - First Patch ===\
+        console.log("DEBUG: Checking diary conditions - diaryEnabled:", diaryLoggingEnabled, "weatherModel exists:", !!currentWeatherModel)\
+        if (!currentWeatherModel || currentWeatherModel.temperature === -9999) {\
+            console.log("DEBUG: Weather model not ready - exists:", !!currentWeatherModel, "temp:", currentWeatherModel ? currentWeatherModel.temperature : "N/A")\
+            dbgprint("Diary: weather model not ready yet")\
+            saveToCache()\
+            return\
+        }\
+\
+        var today = new Date().toISOString().slice(0, 10)\
+        console.log("DEBUG: Date check - today:", today, "lastLogged:", plasmoid.configuration.lastLoggedDate || "(never)", "different:", (plasmoid.configuration.lastLoggedDate || "") !== today)\
+        if (diaryLoggingEnabled && (plasmoid.configuration.lastLoggedDate || "") !== today) {\
+            console.log("DEBUG: Opening diary dialog!")\
+            showDiaryEntryDialog({\
+                temperature: currentWeatherModel.temperature,\
+                humidity: currentWeatherModel.humidity,\
+                pressureHpa: currentWeatherModel.pressureHpa,\
+                condition: "Weather condition"\
+            })\
+            plasmoid.configuration.lastLoggedDate = today\
+        }\
+  }' "$MAINQML"
+else
+  echo "Patch 1 already applied"
+fi
+
+
+
+if ! grep -q "=== DIARY FUNCTIONS - second Patch ===" "$MAINQML"; then
+  sed -i '/diaryDialogWindow.requestActivate()/,/Timer {/{
+    /Timer {/i\
+    // === DIARY FUNCTIONS - second Patch ===\
+\
+    // === DIARY FUNCTIONS ===\
+    function showDiaryEntryDialog(weatherData) {\
+        if (!plasmoid.configuration.diaryLoggingEnabled) {\
+            return\
+        }\
+        diaryDialogWindow.weatherData = weatherData\
+        diaryDialogWindow.show()\
+        diaryDialogWindow.raise()\
+        diaryDialogWindow.requestActivate()\
+    }\
+\
+    // === DIARY DIALOG WINDOW ===\
+    Window {\
+        id: diaryDialogWindow\
+        property var weatherData: null\
+        width: 600\
+        height: 450\
+        modality: Qt.NonModal\
+        flags: Qt.Window\
+        title: i18n("Add to Daily Diary")\
+        color: Kirigami.Theme.backgroundColor\
+        visible: false\
+\
+        Component.onCompleted: {\
+            setX(Screen.width / 2 - width / 2)\
+            setY(Screen.height / 2 - height / 2)\
+            console.log("Diary dialog initialized")\
+            console.log("Configured log path:", diaryLogPath)\
+        }\
+\
+        ColumnLayout {\
+            anchors.fill: parent\
+            anchors.margins: 24\
+            spacing: 20\
+        }\
+    }\
+\
+    // === AUTOMATIC DIARY POPUP TIMER ===\
+    Timer {\
+        id: autoPopupTimer\
+        interval: 60000\
+        running: diaryAutoPopupEnabled && diaryLoggingEnabled\
+        repeat: true\
+        onTriggered: {\
+            var now = new Date()\
+            var currentHour = now.getHours()\
+            var currentDateStr = Qt.formatDate(now, "yyyy-MM-dd")\
+            if (currentHour === diaryAutoPopupHour && lastAutoPopupDate !== currentDateStr) {\
+                var tempWeatherData = {\
+                    temperature: currentWeatherModel ? currentWeatherModel.temperature : "N/A",\
+                    humidity: currentWeatherModel ? currentWeatherModel.humidity : "N/A",\
+                    pressureHpa: currentWeatherModel ? currentWeatherModel.pressureHpa : "N/A",\
+                    condition: currentWeatherModel ? "Current weather" : "No data"\
+                }\
+                showDiaryEntryDialog(tempWeatherData)\
+                plasmoid.configuration.lastAutoPopupDate = currentDateStr\
+                lastAutoPopupDate = currentDateStr\
+            }\
+        }\
+\
+    Plasmoid.contextualActions: [\
+        PlasmaCore.Action {\
+            text: i18n("Add a weather notation")\
+            icon.name: "document-edit"\
+            onTriggered: {\
+                var tempWeatherData = {\
+                    temperature: currentWeatherModel ? currentWeatherModel.temperature : "N/A",\
+                    humidity: currentWeatherModel ? currentWeatherModel.humidity : "N/A",\
+                    pressureHpa: currentWeatherModel ? currentWeatherModel.pressureHpa : "N/A",\
+                    condition: currentWeatherModel ? "Current weather" : "No data"\
+                }\
+                showDiaryEntryDialog(tempWeatherData)\
+            }\
+        },\
+    ]\
+  }' "$MAINQML"
+else
+  echo "Patch 2 already applied"
+fi

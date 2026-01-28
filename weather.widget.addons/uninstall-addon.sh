@@ -1,28 +1,48 @@
 #!/usr/bin/env bash
+set -e
 
-WIDGET="$HOME/.local/share/plasma/plasmoids/weather.widget.plus"
-MAINQML="$WIDGET/contents/ui/main.qml"
+PLASMOID="$HOME/.local/share/plasma/plasmoids/weather.widget.plus"
+MAINQML="$PLASMOID/contents/ui/main.qml"
 
-echo "== Uninstalling Weather Widget Plus Addon =="
+echo "== Weather Widget Plus Addon Uninstaller =="
 
-# --- Remove imports ---
-sed -i \
-  -e '/import "..\/code\/diary.js" as Diary/d' \
-  -e '/import "..\/code\/dailyState.js" as DailyState/d' \
-  "$MAINQML"
-
-# --- Remove hook block ---
-sed -i '/var didLog = DailyState.handleWeather/,/dbgprint("Diary: logged new day")/d' "$MAINQML"
-
-# --- Remove addon files ---
-rm -f "$WIDGET/contents/code/diary.js"
-rm -f "$WIDGET/contents/code/dailyState.js"
-
-# --- Restart Plasma ---
-if command -v kquitapp6 >/dev/null; then
-  kquitapp6 plasmashell && plasmashell &
-else
-  kquitapp5 plasmashell && plasmashell &
+if [[ ! -f "$MAINQML" ]]; then
+  echo "❌ main.qml not found"
+  exit 1
 fi
+
+# -----------------------------
+# Remove injected patch block
+# -----------------------------
+sed -i '/=== DIARY LOGGING First Patch ===/,/plasmoid.configuration.lastLoggedDate = today/d' "$MAINQML"
+
+# -----------------------------
+# Remove DiaryDialog block
+# -----------------------------
+sed -i '/\/\/ Import DiaryDialog/,/}/d' "$MAINQML"
+
+# -----------------------------
+# Remove imports
+# -----------------------------
+sed -i '/import "..\/code\/diary.js"/d' "$MAINQML"
+sed -i '/import "..\/code\/dailyState.js"/d' "$MAINQML"
+sed -i '/import "gui" as DiaryUI/d' "$MAINQML"
+
+# -----------------------------
+# Remove addon files
+# -----------------------------
+rm -f "$PLASMOID/contents/code/diary.js"
+rm -f "$PLASMOID/contents/code/dailyState.js"
+rm -f "$PLASMOID/contents/ui/gui/DiaryDialog.qml"
+rm -f "$PLASMOID/contents/ui/config/ConfigDiary.qml"
+rm -f "$PLASMOID/contents/ui/config/ConfigLogs.qml"
+
+echo "[+] Addon files removed"
+
+# -----------------------------
+# Restart Plasma
+# -----------------------------
+echo "[+] Restarting Plasma"
+kquitapp6 plasmashell && plasmashell &
 
 echo "== Uninstall complete =="
