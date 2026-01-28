@@ -16,10 +16,10 @@
  */
 import QtQuick 2.15
 import QtQuick.Layouts
-import QtQuick.Window 2.15
 import org.kde.plasma.plasmoid
 import org.kde.plasma.core as PlasmaCore
 import QtQuick.Controls
+// import QtQuick.Window
 import org.kde.plasma.components 3.0 as PlasmaComponents
 import org.kde.plasma.plasma5support as Plasma5Support
 import org.kde.kirigami as Kirigami
@@ -30,9 +30,9 @@ import "../code/icons.js" as IconTools
 import "../code/unit-utils.js" as UnitUtils
 import "../code/timezoneData.js" as TZ
 
-
 PlasmoidItem {
     id: main
+    Plasmoid.backgroundHints: PlasmaCore.Types.DefaultBackground | PlasmaCore.Types.ConfigurableBackground
 
     /* Includes */
     WeatherCache {
@@ -44,15 +44,6 @@ PlasmoidItem {
         engine: "time"
         connectedSources: ["Local"]
         interval: 0
-    }
-    Plasma5Support.DataSource {
-        id: executable
-        engine: "executable"
-        connectedSources: []
-        onNewData: disconnectSource(sourceName)
-        function exec(cmd) {
-            connectSource(cmd)
-        }
     }
     FontLoader {
         source: "../fonts/weathericons-regular-webfont-2.0.11.ttf"
@@ -106,35 +97,6 @@ PlasmoidItem {
     property int textSizeMode: plasmoid.configuration.textSizeMode
     property bool debugLogging: plasmoid.configuration.debugLogging
     property int inTrayActiveTimeoutSec: plasmoid.configuration.inTrayActiveTimeoutSec
-    property bool diaryLoggingEnabled: plasmoid.configuration.diaryLoggingEnabled !== undefined ? plasmoid.configuration.diaryLoggingEnabled : true
-    property bool diaryAutoPopupEnabled: plasmoid.configuration.diaryAutoPopupEnabled !== undefined ? plasmoid.configuration.diaryAutoPopupEnabled : false
-    property int diaryAutoPopupHour: plasmoid.configuration.diaryAutoPopupHour !== undefined ? plasmoid.configuration.diaryAutoPopupHour : 20
-    property string lastAutoPopupDate: plasmoid.configuration.lastAutoPopupDate || ""
-    property string diaryLogPath: {
-        // Get the log path from configuration, with fallback to home directory
-        var logPath = plasmoid.configuration.logPath !== undefined && plasmoid.configuration.logPath !== "" 
-                      ? plasmoid.configuration.logPath 
-                      : "";
-        
-        // If no path is configured, use the home directory
-        if (!logPath || logPath === "") {
-            // Try to get HOME environment variable or use fallback
-            try {
-                // For KDE Plasma widgets, we'll use a more robust approach
-                // If executable is available, we can use it to get the home directory
-                if (executable) {
-                    // We'll just return a default home path - the actual home detection 
-                    // will be handled in the diary.js file
-                    return "";
-                } else {
-                    return "/tmp";  // Fallback
-                }
-            } catch (e) {
-                return "/tmp";  // Safe fallback
-            }
-        }
-        return logPath;
-    }
     property string widgetFontName: (plasmoid.configuration.widgetFontName === "") ? Kirigami.Theme.defaultFont : plasmoid.configuration.widgetFontName
     property int widgetFontSize: plasmoid.configuration.widgetFontSize
     property int temperatureType: plasmoid.configuration.temperatureType
@@ -384,7 +346,6 @@ PlasmoidItem {
 
     }
     function dataLoadedFromInternet() {
-        console.log("DEBUG: dataLoadedFromInternet() called")
         dbgprint2("dataLoadedFromInternet")
         dbgprint("Data Loaded From Internet successfully")
 
@@ -404,28 +365,6 @@ PlasmoidItem {
         meteogramModelChanged = !meteogramModelChanged
         dbgprint("meteogramModelChanged:" + meteogramModelChanged)
 
-
-        // === DIARY LOGGING ===
-        console.log("DEBUG: Checking diary conditions - diaryEnabled:", diaryLoggingEnabled, "weatherModel exists:", !!currentWeatherModel)
-        if (!currentWeatherModel || currentWeatherModel.temperature === -9999) {
-            console.log("DEBUG: Weather model not ready - exists:", !!currentWeatherModel, "temp:", currentWeatherModel ? currentWeatherModel.temperature : "N/A")
-            dbgprint("Diary: weather model not ready yet")
-            saveToCache()
-            return
-        }
-
-        var today = new Date().toISOString().slice(0, 10)
-        console.log("DEBUG: Date check - today:", today, "lastLogged:", plasmoid.configuration.lastLoggedDate || "(never)", "different:", (plasmoid.configuration.lastLoggedDate || "") !== today)
-        if (diaryLoggingEnabled && (plasmoid.configuration.lastLoggedDate || "") !== today) {
-            console.log("DEBUG: Opening diary dialog!")
-            showDiaryEntryDialog({
-                temperature: currentWeatherModel.temperature,
-                humidity: currentWeatherModel.humidity,
-                pressureHpa: currentWeatherModel.pressureHpa,
-                condition: "Weather condition"
-            })
-            plasmoid.configuration.lastLoggedDate = today
-        }
         saveToCache()
     }
     function reloadDataFailureCallback() {
@@ -436,12 +375,12 @@ PlasmoidItem {
         loadFromCache()
     }
     function updateLastReloadedText() {
-        dbgprint("updateLastReloadedText: " + loadingData.lastloadingSuccessTime)
+        // dbgprint("updateLastReloadedText: " + loadingData.lastloadingSuccessTime)
         if (loadingData.lastloadingSuccessTime > 0) {
             lastReloadedText = '⬇ ' + DataLoader.getLastReloadedTimeText(dateNow() - loadingData.lastloadingSuccessTime)
         }
-        plasmoid.status = DataLoader.getPlasmoidStatus(loadingData.lastloadingSuccessTime, inTrayActiveTimeoutSec)
-        dbgprint(plasmoid.status)
+        // plasmoid.status = DataLoader.getPlasmoidStatus(loadingData.lastloadingSuccessTime, inTrayActiveTimeoutSec)
+        // dbgprint(plasmoid.status)
     }
     function updateCompactItem(){
         dbgprint2("updateCompactItem")
@@ -511,10 +450,10 @@ PlasmoidItem {
             xhr.open('GET', URL)
             xhr.setRequestHeader("User-Agent","Mozilla/5.0 (X11; Linux x86_64) Gecko/20100101 ")
             xhr.send()
-            xhr.onload =  (event) => {
-                dbgprint("env_QML_XHR_ALLOW_FILE_READ = 1. Using Builtin Location databases...")
-                env_QML_XHR_ALLOW_FILE_READ = true
-            }
+            // xhr.onload =  (event) => {
+            //     dbgprint("env_QML_XHR_ALLOW_FILE_READ = 1. Using Builtin Location databases...")
+            //     env_QML_XHR_ALLOW_FILE_READ = true
+            // }
 
             if (plasmoid.configuration.widgetFontSize === undefined) {
                 plasmoid.configuration.widgetFontSize = 30
@@ -659,364 +598,20 @@ PlasmoidItem {
         cacheData.cacheMap[cacheID] = contentToCache
     }
 
-    // === DIARY FUNCTIONS ===
-    function showDiaryEntryDialog(weatherData) {
-        if (!plasmoid.configuration.diaryLoggingEnabled) {
-            return
-        }
-        diaryDialogWindow.weatherData = weatherData
-        diaryDialogWindow.show()
-        diaryDialogWindow.raise()
-        diaryDialogWindow.requestActivate()
-    }
 
-    // === DIARY DIALOG WINDOW ===
-    Window {
-        id: diaryDialogWindow
-        
-        property var weatherData: null
-        
-        width: 600
-        height: 450
-        modality: Qt.NonModal
-        flags: Qt.Window
-        title: i18n("Add to Daily Diary")
-        
-        color: Kirigami.Theme.backgroundColor
-        visible: false
-        
-        // Center on screen
-        Component.onCompleted: {
-            setX(Screen.width / 2 - width / 2)
-            setY(Screen.height / 2 - height / 2)
-            console.log("Diary dialog initialized")
-            console.log("Configured log path:", diaryLogPath)
-        }
-        
-        ColumnLayout {
-            anchors.fill: parent
-            anchors.margins: 24
-            spacing: 20
-
-            // Header with icon
-                RowLayout {
-                    spacing: 12
-                    Layout.fillWidth: true
-
-                    Kirigami.Icon {
-                        source: "document-edit"
-                        Layout.preferredWidth: 32
-                        Layout.preferredHeight: 32
-                        color: Kirigami.Theme.highlightColor
-                    }
-
-                    Label {
-                        text: i18n("Add Notations:")
-                        font.pointSize: Kirigami.Theme.defaultFont.pointSize + 2
-                        font.weight: Font.DemiBold
-                        Layout.fillWidth: true
-                        wrapMode: Text.Wrap
-                        color: Kirigami.Theme.textColor
-                    }
-                }
-
-                // Weather info banner
-                Rectangle {
-                    Layout.fillWidth: true
-                    Layout.preferredHeight: 50
-                    color: Kirigami.Theme.alternateBackgroundColor
-                    radius: 4
-                    border.width: 1
-                    border.color: Kirigami.Theme.disabledTextColor
-
-                    RowLayout {
-                        anchors.fill: parent
-                        anchors.margins: 10
-                        spacing: 20
-
-                        Label {
-                            text: "🌡️ " + (diaryDialogWindow.weatherData ? diaryDialogWindow.weatherData.temperature + "°" : "N/A")
-                            font.pointSize: Kirigami.Theme.defaultFont.pointSize + 2
-                            font.bold: true
-                        }
-
-                        Rectangle {
-                            width: 2
-                            Layout.fillHeight: true
-                            color: Kirigami.Theme.disabledTextColor
-                        }
-
-                        Label {
-                            text: "💧 " + (diaryDialogWindow.weatherData ? diaryDialogWindow.weatherData.humidity + "%" : "N/A")
-                            font.pointSize: Kirigami.Theme.defaultFont.pointSize + 2
-                            font.bold: true
-                        }
-
-                        Rectangle {
-                            width: 2
-                            Layout.fillHeight: true
-                            color: Kirigami.Theme.disabledTextColor
-                        }
-
-                        Label {
-                            text: "🔽 " + (diaryDialogWindow.weatherData ? diaryDialogWindow.weatherData.pressureHpa + " hPa" : "N/A")
-                            font.pointSize: Kirigami.Theme.defaultFont.pointSize + 2
-                            font.bold: true
-                        }
-
-                        Item {
-                            Layout.fillWidth: true
-                        }
-                    }
-                }
-
-                // Text input area
-                ScrollView {
-                    Layout.fillWidth: true
-                    Layout.fillHeight: true
-                    Layout.minimumHeight: 150
-                    
-                    TextArea {
-                        id: diaryTextInput
-                        placeholderText: i18n("e.g., Storms, Cloudy, Very Overcast")
-                        font.pointSize: Kirigami.Theme.defaultFont.pointSize + 1
-                        wrapMode: TextEdit.Wrap
-                        selectByMouse: true
-                        
-                        background: Rectangle {
-                            color: Kirigami.Theme.backgroundColor
-                            border.width: 2
-                            border.color: diaryTextInput.activeFocus ? Kirigami.Theme.highlightColor : Kirigami.Theme.disabledTextColor
-                            radius: 4
-                        }
-                        
-                        Keys.onReturnPressed: {
-                            if (event.modifiers & Qt.ControlModifier) {
-                                acceptDialog()
-                            }
-                        }
-                        Keys.onEnterPressed: {
-                            if (event.modifiers & Qt.ControlModifier) {
-                                acceptDialog()
-                            }
-                        }
-                        Keys.onEscapePressed: {
-                            rejectDialog()
-                        }
-                    }
-                }
-
-                // Help text
-                Label {
-                    text: i18n("💡 Tip: Press Ctrl+Enter to save quickly, Esc to skip")
-                    font.pointSize: Kirigami.Theme.smallFont.pointSize
-                    opacity: 0.7
-                    Layout.fillWidth: true
-                }
-                
-                // Status/feedback label
-                Label {
-                    id: statusLabel
-                    text: ""
-                    font.pointSize: Kirigami.Theme.smallFont.pointSize
-                    color: Kirigami.Theme.positiveTextColor
-                    visible: text !== ""
-                    Layout.fillWidth: true
-                    wrapMode: Text.Wrap
-                }
-                
-                // Buttons
-                RowLayout {
-                    Layout.fillWidth: true
-                    spacing: 10
-                    
-                    Item {
-                        Layout.fillWidth: true
-                    }
-                    
-                    Button {
-                        text: i18n("Skip")
-                        icon.name: "dialog-cancel"
-                        onClicked: {
-                            console.log("Skip - saving weather only")
-                            try {
-                                Diary.appendWeather(diaryDialogWindow.weatherData, "", executable, diaryLogPath, plasmoid.configuration.diaryLayoutType)
-                            } catch (e) {
-                                console.error("Skip save error:", e.message)
-                            }
-                            diaryTextInput.text = ""
-                            diaryDialogWindow.visible = false
-                        }
-                    }
-                    
-                    Button {
-                        text: i18n("Save")
-                        icon.name: "dialog-ok"
-                        highlighted: true
-                        onClicked: {
-                            console.log("==================== SAVE CLICKED ====================")
-                            console.log("Weather data:", JSON.stringify(diaryDialogWindow.weatherData))
-                            console.log("User notes:", diaryTextInput.text)
-                            console.log("Log path from config:", diaryLogPath)
-                            console.log("Layout type:", plasmoid.configuration.diaryLayoutType)
-                            console.log("Executable available:", !!executable)
-                            
-                            statusLabel.text = " Saving..."
-                            statusLabel.visible = true
-                            
-                            try {
-                                console.log("Calling Diary.appendWeather...")
-                                Diary.appendWeather(
-                                    diaryDialogWindow.weatherData, 
-                                    diaryTextInput.text, 
-                                    executable, 
-                                    diaryLogPath, 
-                                    plasmoid.configuration.diaryLayoutType
-                                )
-                                console.log("✓ Diary.appendWeather completed")
-                                console.log("Data should be saved to:", diaryLogPath || "~/weather_diary.txt")
-                                statusLabel.text = " Saved to: " + (diaryLogPath || "~/weather_diary.txt")
-                            } catch (e) {
-                                console.error("❌ Save error:", e.message)
-                                console.error("Stack:", e.stack)
-                                statusLabel.text = "❌ Error: " + e.message
-                            }
-                            
-                            console.log("=====================================================")
-                            
-                            // Close after brief delay
-                            Qt.callLater(function() {
-                                diaryTextInput.text = ""
-                                diaryDialogWindow.visible = false
-                            })
-                        }
-                    }
-                }
-            }
-        
-        function acceptDialog() {
-            console.log("SAVE CLICKED - STARTING")
-            
-            statusLabel.text = "💾 Saving..."
-            statusLabel.visible = true
-            console.log("Set status to Saving...")
-            
-            // TEMPORARILY SKIP THE DIARY SAVE TO TEST
-            // try {
-            //     Diary.appendWeather(diaryDialogWindow.weatherData, diaryTextInput.text, executable, diaryLogPath, plasmoid.configuration.diaryLayoutType)
-            //     console.log("Diary save completed")
-            // } catch (e) {
-            //     console.error("Diary error:", e.message)
-            // }
-            
-            console.log("Showing success message...")
-            statusLabel.text = "✅ Notations saved!"
-            statusLabel.color = Kirigami.Theme.positiveTextColor
-            
-            console.log("Starting timer...")
-            closeTimer.start()
-            console.log("Timer started")
-        }
-        
-        Timer {
-            id: closeTimer
-            interval: 1500
-            repeat: false
-            onTriggered: {
-                console.log("TIMER FIRED - CLOSING!")
-                diaryTextInput.text = ""
-                statusLabel.text = ""
-                diaryDialogWindow.visible = false
-                console.log("Window closed")
-            }
-        }
-        
-        function rejectDialog() {
-            console.log("SKIP CLICKED - CLOSING IMMEDIATELY")
-            statusLabel.text = "⏭️ Skipping..."
-            statusLabel.visible = true
-            
-            // TEMPORARILY SKIP THE DIARY SAVE TO TEST
-            // Diary.appendWeather(diaryDialogWindow.weatherData, "", executable, diaryLogPath, plasmoid.configuration.diaryLayoutType)
-            
-            diaryTextInput.text = ""
-            console.log("Closing window...")
-            diaryDialogWindow.visible = false
-            console.log("Window closed")
-        }
-        
-        onVisibleChanged: {
-            if (visible) {
-                diaryTextInput.forceActiveFocus()
-                statusLabel.text = ""
-            }
-        }
-    }
-
-    // === AUTOMATIC DIARY POPUP TIMER ===
-    Timer {
-        id: autoPopupTimer
-        interval: 60000 // Check every minute
-        running: diaryAutoPopupEnabled && diaryLoggingEnabled
-        repeat: true
-        onTriggered: {
-            var now = new Date()
-            var currentHour = now.getHours()
-            var currentDateStr = Qt.formatDate(now, "yyyy-MM-dd")
-            
-            // Check if we should show the popup
-            // Only show once per day at the configured hour
-            if (currentHour === diaryAutoPopupHour && lastAutoPopupDate !== currentDateStr) {
-                // Create temporary weather data for the diary entry
-                var tempWeatherData = {
-                    temperature: currentWeatherModel ? currentWeatherModel.temperature : "N/A",
-                    humidity: currentWeatherModel ? currentWeatherModel.humidity : "N/A",
-                    pressureHpa: currentWeatherModel ? currentWeatherModel.pressureHpa : "N/A",
-                    condition: currentWeatherModel ? "Current weather" : "No data"
-                }
-                
-                // Show the diary entry dialog
-                showDiaryEntryDialog(tempWeatherData)
-                
-                // Update the last popup date
-                plasmoid.configuration.lastAutoPopupDate = currentDateStr
-                lastAutoPopupDate = currentDateStr
-            }
-        }
-    }
-
-    // Contextual Actions for System Tray Right-Click Menu
-    Plasmoid.contextualActions: [
-        PlasmaCore.Action {
-            text: i18n("Add a weather notation")
-            icon.name: "document-edit"
-            onTriggered: {
-                // Create temporary weather data for the diary entry
-                var tempWeatherData = {
-                    temperature: currentWeatherModel ? currentWeatherModel.temperature : "N/A",
-                    humidity: currentWeatherModel ? currentWeatherModel.humidity : "N/A",
-                    pressureHpa: currentWeatherModel ? currentWeatherModel.pressureHpa : "N/A",
-                    condition: currentWeatherModel ? "Current weather" : "No data"
-                }
-                
-                // Show the diary entry dialog with the current weather data
-                showDiaryEntryDialog(tempWeatherData)
-            }
-        },
-    ]
     Timer {
         interval: 10000
         running: true
         repeat: true
         onTriggered: {
-            dbgprint2("Timer Triggered")
+            // dbgprint2("Timer Triggered")
             var now=dateNow()
-            dbgprint("*** loadingData Flag : " + loadingData.loadingDatainProgress)
-            dbgprint("*** loadingData failedAttemptCount : " + loadingData.failedAttemptCount)
-            dbgprint("*** Last Load Success: " + (loadingData.lastloadingSuccessTime))
-            dbgprint("*** Next Load Due    : " + (currentPlace.nextReload))
-            dbgprint("*** Time Now         : " + now)
-            dbgprint("*** Next Load in     : " + Math.round((currentPlace.nextReload - now) / 1000) + " sec = "+ ((currentPlace.nextReload - now) / 60000).toFixed(2) + " min")
+            // dbgprint("*** loadingData Flag : " + loadingData.loadingDatainProgress)
+            // dbgprint("*** loadingData failedAttemptCount : " + loadingData.failedAttemptCount)
+            // dbgprint("*** Last Load Success: " + (loadingData.lastloadingSuccessTime))
+            // dbgprint("*** Next Load Due    : " + (currentPlace.nextReload))
+            // dbgprint("*** Time Now         : " + now)
+            // dbgprint("*** Next Load in     : " + Math.round((currentPlace.nextReload - now) / 1000) + " sec = "+ ((currentPlace.nextReload - now) / 60000).toFixed(2) + " min")
 
             updateLastReloadedText()
             // if ((loadingData.lastloadingSuccessTime === 0) && (updatingPaused)) {
@@ -1042,4 +637,6 @@ PlasmoidItem {
 
         }
     }
+
+
 }

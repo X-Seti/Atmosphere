@@ -73,7 +73,7 @@ Item {
     property color gridColorBrightHighlight: textColorLight ? Qt.tint(Kirigami.Theme.textColor, '#25000000') : Qt.tint(Kirigami.Theme.textColor, '#25FFFFFF')
     property color pressureColor: Kirigami.Theme.positiveTextColor
     property color temperatureWarmColor: Kirigami.Theme.negativeTextColor
-    property color temperatureColdColor: Kirigami.Theme.activeTextColor
+    property color temperatureColdColor: Kirigami.Theme.visitedLinkColor
     property color rainColor: Kirigami.Theme.linkColor // textColorLight ? Qt.tint(Kirigami.Theme.linkColor, '#25FFFFFF') : Qt.tint(Kirigami.Theme.linkColor, '#50000000')
 
 
@@ -92,7 +92,7 @@ Item {
 
     onMeteogramModelChangedChanged: {
         dbgprint2('METEOGRAM changed')
-        buildMetogramData()
+        buildMeteogramData()
         processMeteogramData()
         buildCurves()
     }
@@ -178,7 +178,7 @@ Item {
     Rectangle {
         id: bufferArea
         width: imageWidth
-        height: imageHeight + 54 //54
+        height: imageHeight + 42 //54
         anchors.top: meteogram.top
         anchors.left: meteogram.left
         anchors.leftMargin: labelWidth
@@ -413,10 +413,10 @@ Item {
                 anchors.top: parent.top
                 anchors.topMargin: -labelHeight
                 anchors.left: parent.left
-                anchors.leftMargin: parent.width / 2
+                anchors.leftMargin: parent.width / 2.5 //parent.width / 2
                 font.pixelSize: 11
                 font.pointSize: -1
-                visible: dayBegins && canShowDay
+                visible: (dayBegins && (index < (hourGridModel.count - 5))) || ((index === 0) && (hourFrom < 18))
             }
 
             Rectangle {
@@ -456,7 +456,7 @@ Item {
                 z: 999
                 font.family: 'weathericons'
                 text: (differenceHours === 1 && textVisible) || index === hourGridModel.count-1 || index === 0 || iconName === '' ? '' : IconTools.getIconCode(iconName, currentPlace.providerId, timePeriod)
-                visible: iconName != "\uf07b"
+                visible: iconName != "\uf07b" && (y > 10) && (y < graphArea.height)
                 Component.onCompleted: {
                 }
             }
@@ -543,7 +543,7 @@ Item {
             anchors.topMargin: -parent.anchors.topMargin
             // clip: false
             width: parent.width
-            height: bufferArea.height - temperatureIncrementPixels * (temperatureIncrementDegrees - 1) + 0
+            height: graphArea.height - temperatureIncrementPixels * (temperatureIncrementDegrees - 1) + 0
 
             onWidthChanged: {
 
@@ -614,7 +614,7 @@ Item {
         return new Date(Date.UTC(b[0], --b[1], b[2], b[3], b[4], b[5], b[6]))
     }
 
-    function buildMetogramData() {
+    function buildMeteogramData() {
         dbgprint2("buildMetogramData (meteogram)")
         // var counter = 0
         var i = 0
