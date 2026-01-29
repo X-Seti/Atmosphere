@@ -1,4 +1,4 @@
-// Belongs in ..contents/ui/gui/DiaryDialog.qml version 10
+// Belongs in ..contents/ui/gui/DiaryDialog.qml version 11
 /*
  * X-Seti - Jan 25 2025 - Addons for Weather Widget Plus (Credit - Martin Kotelnik)
  *
@@ -13,17 +13,6 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http: //www.gnu.org/licenses/>.
 */
-
-//import QtQuick 2.15
-//import QtQuick.Layouts 1.15
-//import QtQuick.Controls 2.15
-//import QtQuick.Window 2.15
-
-//import org.kde.plasma.plasmoid 2.0
-//import org.kde.plasma.core 2.0 as PlasmaCore
-//import org.kde.kirigami 2.5 as Kirigami
-//import org.kde.plasma.components 3.0 as PlasmaComponents
-//import org.kde.plasma.plasma5support as Plasma5Support
 
 import QtQuick 2.15
 import QtQuick.Layouts
@@ -197,7 +186,8 @@ Item {
                     temperature: currentWeatherModel ? currentWeatherModel.temperature : "N/A",
                     humidity: currentWeatherModel ? currentWeatherModel.humidity : "N/A",
                     pressureHpa: currentWeatherModel ? currentWeatherModel.pressureHpa : "N/A",
-                    condition: currentWeatherModel ? currentWeatherModel.condition : "No data"
+                    //condition: currentWeatherModel ? currentWeatherModel.condition : "No data"
+                    condition: currentWeatherModel ? condition: currentProvider.currentCondition : "No data"
                 }
                 showDiaryEntryDialog(tempWeatherData)
             }
@@ -206,13 +196,14 @@ Item {
             text: i18n("Show notation log")
             icon.name: "document-open"
             onTriggered: {
+                // FIX: Properly call openLogFile with executable
                 Diary.openLogFile(
                     plasmoid.configuration.logPath,
                     plasmoid.configuration.diaryEditorType,
-                    plasmoid.configuration.diaryCustomEditor
+                    plasmoid.configuration.diaryCustomEditor,
+                    executable
                 )
             }
         }
     ]
 }
-

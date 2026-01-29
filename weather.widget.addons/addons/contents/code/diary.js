@@ -15,7 +15,41 @@
  */
 .pragma library
 
-function openLogFile(logPath, editorType, customEditor) {
+// Helper function to get short day name
+function getShortDay(date) {
+    var days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
+    return days[date.getDay()]
+}
+
+// Helper function to get full day name
+function getFullDay(date) {
+    var days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"]
+    return days[date.getDay()]
+}
+
+// Helper function to get short month name
+function getShortMonth(date) {
+    var months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
+    return months[date.getMonth()]
+}
+
+// Helper function to get full month name
+function getFullMonth(date) {
+    var months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"]
+    return months[date.getMonth()]
+}
+
+// Helper function to pad numbers
+function pad(num) {
+    return (num < 10 ? "0" : "") + num
+}
+
+function openLogFile(logPath, editorType, customEditor, executable) {
+    if (!executable) {
+        console.error("diary.js: openLogFile - executable is null!")
+        return
+    }
+
     var filePath = logPath
     if (!filePath || filePath === "" || filePath === "/tmp") {
         filePath = "$HOME/weather_diary.txt"
@@ -29,7 +63,12 @@ function openLogFile(logPath, editorType, customEditor) {
             var cmd = editor + " '" + filePath + "' &"
             console.log("Opening diary log:", cmd)
 
-            executable.exec(cmd)
+            try {
+                executable.exec(cmd)
+                console.log("diary.js: Opened log file in " + editor)
+            } catch (e) {
+                console.error("diary.js: Error opening log file:", e.message)
+            }
 }
 
 function appendWeather(weatherData, notes, executable, logPath, layoutType) {
@@ -53,47 +92,91 @@ function appendWeather(weatherData, notes, executable, logPath, layoutType) {
 
     console.log("diary.js: Writing to:", filePath)
 
+    // === SAFETY: Ensure directory exists ===
+    var dirCmd = "mkdir -p \"$(dirname '" + filePath + "')\""
+    try {
+        executable.exec(dirCmd)
+    } catch (e) {
+        console.error("diary.js: Error creating directory:", e.message)
+    }
+
+    // === SAFETY: Create file with header if it doesn't exist ===
+    var checkCmd = "[ ! -f '" + filePath + "' ] && echo '# Weather Diary Log\n# Created: " + new Date().toISOString() + "\n' > '" + filePath + "' || true"
+    try {
+        executable.exec(checkCmd)
+    } catch (e) {
+        console.error("diary.js: Error in file check:", e.message)
+    }
+
     // Get current date/time
     var now = new Date()
-    var dateStr = now.toISOString().slice(0, 10) // YYYY-MM-DD
-    var timeStr = now.toTimeString().slice(0, 5) // HH:MM
-
+    var day = now.getDate()
+    var year = now.getFullYear()
+    var hours = pad(now.getHours())
+    var minutes = pad(now.getMinutes())
+    
+    // Format date strings for different layouts
+    var dateShort = getShortDay(now) + ", " + day + " " + getShortMonth(now) + " " + year
+    var dateFull = getFullDay(now) + ", " + day + " " + getFullMonth(now) + " " + year
+    var dateAlt = getShortDay(now) + ", " + getFullMonth(now) + " " + day + ", " + year
+    
+    // Get weather condition, handle undefined
+    var condition = weatherData.condition || "Unknown"
 
     // Build entry based on layout type
     var entry = ""
 
     if (layoutType === 0) {
-        // Compact
-
-        entry = dateStr + " " + timeStr + " | Temp: " + weatherData.temperature + "° | Humidity: " + weatherData.humidity + "% | Pressure: " + weatherData.pressureHpa + " hPa"
-        entry += "Weather: " + weatherData.condition + "\n"
-        entry += "\n"
-        if (notes && notes.trim() !== "") {
-            entry += " | Notes: " + notes.trim()
-        }
-        entry += "\n"
-    } else if (layoutType === 1) {
-        // Detailed
-        entry = "\n" + dateStr + " " + timeStr + "\n"
-        entry += "Weather: " + weatherData.condition + "\n"
+        // LEGACY FORMAT - Original style
+        entry = "\n" + dateShort + "\n"
+        entry += "Weather: " + condition + "\n"
         entry += "Temperature: " + weatherData.temperature + "°\n"
         entry += "Humidity: " + weatherData.humidity + "%\n"
         entry += "Pressure: " + weatherData.pressureHpa + " hPa\n"
-        entry += "\n"
-        if (notes && notes !== "") {
-            entry += "Notes: " + notes + "\n"
+        if (notes && notes.trim() !== "") {
+            entry += "\nNotes: " + notes.trim() + "\n"
         }
         entry += "\n"
-    } else {
-        // Markdown
-        entry = "\n## " + dateStr + " " + timeStr + "\n\n"
-        entry += "- **Weather:** " + weatherData.condition  + "\n"
-        entry += "- **Temperature:** " + weatherData.temperature + "°\n"
-        entry += "- **Humidity:** " + weatherData.humidity + "%\n"
-        entry += "- **Pressure:** " + weatherData.pressureHpa + " hPa\n"
+        
+    } else if (layoutType === 1) {
+        // COMPACT FORMAT - Single line
+        entry = dateShort + " " + hours + ":" + minutes + " - Weather: " + condition + "\n"
+        entry += "Temperature: " + weatherData.temperature + "° - Humidity: " + weatherData.humidity + "% - Pressure: " + weatherData.pressureHpa + " hPa\n"
+        if (notes && notes.trim() !== "") {
+            entry += "\nNotes: " + notes.trim() + "\n"
+        }
+        entry += "\n-----\n\n"
+        
+    } else if (layoutType === 2) {
+        // DETAILED FORMAT - Full day name
+        entry = dateFull + " " + hours + ":" + minutes + " - Weather: " + condition + "\n"
+        entry += "Temperature: " + weatherData.temperature + "° - Humidity: " + weatherData.humidity + "% - Pressure: " + weatherData.pressureHpa + " hPa\n"
+        if (notes && notes.trim() !== "") {
+            entry += "\nNotes: " + notes.trim() + "\n"
+        }
         entry += "\n"
-        if (notes && notes !== "") {
-            entry += "\n**Notes:** " + notes + "\n"
+        
+    } else if (layoutType === 3) {
+        // MARKDOWN FORMAT - Bullet points
+        entry = "\n" + dateShort + " " + hours + ":" + minutes + "\n"
+        entry += "* Weather: " + condition + "\n"
+        entry += "* Temperature: " + weatherData.temperature + "°\n"
+        entry += "* Humidity: " + weatherData.humidity + "%\n"
+        entry += "* Pressure: " + weatherData.pressureHpa + " hPa\n"
+        if (notes && notes.trim() !== "") {
+            entry += "\nNotes: " + notes.trim() + "\n"
+        }
+        entry += "\n"
+        
+    } else {
+        // ALTERNATIVE DATE FORMAT - Month name first
+        entry = "\n" + dateAlt + " " + hours + ":" + minutes + "\n"
+        entry += "Weather: " + condition + "\n"
+        entry += "Temperature: " + weatherData.temperature + "°\n"
+        entry += "Humidity: " + weatherData.humidity + "%\n"
+        entry += "Pressure: " + weatherData.pressureHpa + " hPa\n"
+        if (notes && notes.trim() !== "") {
+            entry += "\nNotes: " + notes.trim() + "\n"
         }
         entry += "\n"
     }
@@ -103,13 +186,15 @@ function appendWeather(weatherData, notes, executable, logPath, layoutType) {
     // Escape single quotes in entry for shell
     var escapedEntry = entry.replace(/'/g, "'\\''")
 
-    // Write to file using echo
+    // === APPEND ONLY - NEVER OVERWRITE ===
     var cmd = "echo '" + escapedEntry + "' >> '" + filePath + "'"
-    console.log("diary.js: Executing command")
+    console.log("diary.js: Executing APPEND command (>>)")
+    console.log("diary.js: This will NEVER overwrite existing log entries")
 
     try {
         executable.exec(cmd)
-        console.log("diary.js: Command executed successfully")
+        console.log("diary.js: Entry appended successfully to log file")
+        console.log("diary.js: Your previous entries are safe and preserved")
     } catch (e) {
         console.error("diary.js: Error executing command:", e.message)
     }
