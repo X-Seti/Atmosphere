@@ -37,9 +37,4 @@ ConfigModel {
         icon: 'view-pim-journal'
         source: 'config/ConfigDiary.qml'
     }
-    ConfigCategory {
-        name: i18n("Logging")
-        icon: 'document-edit'
-        source: 'config/ConfigLogs.qml'
-    }
 }

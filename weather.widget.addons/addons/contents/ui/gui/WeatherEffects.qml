@@ -1,4 +1,4 @@
-// Belongs in ..contents/ui/gui/WeatherEffects.qml
+// Belongs in ..contents/ui/config/ConfigEffects.qml
 /*
  * X-Seti - Jan 25 2025 - Addons for Weather Widget Plus (Credit - Martin Kotelnik)
  *
@@ -15,406 +15,332 @@
  */
 
 import QtQuick 2.15
+import QtQuick.Controls 2.15
+import QtQuick.Dialogs
 import QtQuick.Layouts 1.15
-import QtMultimedia 5.15
-import Qt.labs.platform 1.1
+import org.kde.kirigami 2.5 as Kirigami
 
 Item {
-    id: weatherEffectsRoot
-    anchors.fill: parent
-    visible: plasmoid.configuration.weatherEffectsEnabled
-    z: 1000
-
-    // === CALCULATED PROPERTIES ===
+    property alias cfg_weatherEffectsEnabled: weatherEffectsCheckBox.checked
+    property alias cfg_particleEffectsEnabled: particleEffectsCheckBox.checked
+    property alias cfg_soundEffectsEnabled: soundEffectsCheckBox.checked
+    property alias cfg_wallpaperEffectsEnabled: wallpaperEffectsCheckBox.checked
+    property alias cfg_feelsLikeTooltipEnabled: feelsLikeTooltipCheckBox.checked
     
-    // Feels Like Temperature (Wind Chill + Humidity)
-    property real feelsLikeTemp: {
-        if (!currentWeatherModel || currentWeatherModel.count === 0) return 0
-        
-        var temp = currentWeatherModel.temperature || 0
-        var windSpeed = currentWeatherModel.windSpeedMps || 0
-        var humidity = currentWeatherModel.humidity || 0
+    // Wallpaper paths
+    property alias cfg_wallpaperMorning: wallpaperMorningField.text
+    property alias cfg_wallpaperAfternoon: wallpaperAfternoonField.text
+    property alias cfg_wallpaperEvening: wallpaperEveningField.text
+    property alias cfg_wallpaperNight: wallpaperNightField.text
+    
+    // Shade factors
+    property alias cfg_shadeFactorMorning: shadeFactorMorningSlider.value
+    property alias cfg_shadeFactorAfternoon: shadeFactorAfternoonSlider.value
+    property alias cfg_shadeFactorEvening: shadeFactorEveningSlider.value
+    property alias cfg_shadeFactorNight: shadeFactorNightSlider.value
+    
+    property alias cfg_useSunriseSunset: useSunriseSunsetCheckBox.checked
 
-        // Wind chill (if temp < 10°C and wind > 3km/h)
-        var windChill = temp
-        if (temp <= 10 && windSpeed > 0.83) { // 3km/h ≈ 0.83m/s
-            windChill = 13.12 + 0.6215 * temp - 11.37 * Math.pow(windSpeed, 0.16) + 0.3965 * temp * Math.pow(windSpeed, 0.16)
+    property int currentWallpaperSelection: 0
+
+    FileDialog {
+        id: wallpaperDialog
+        title: "Choose wallpaper image"
+        fileMode: FileDialog.OpenFile
+        nameFilters: ["Image files (*.jpg *.jpeg *.png *.webp)", "All files (*)"]
+
+        onAccepted: {
+            var path = selectedFile.toString()
+            path = path.replace(/^file:\/\//, "")
+            
+            switch(currentWallpaperSelection) {
+                case 0: wallpaperMorningField.text = path; break
+                case 1: wallpaperAfternoonField.text = path; break
+                case 2: wallpaperEveningField.text = path; break
+                case 3: wallpaperNightField.text = path; break
+            }
+        }
+    }
+
+    Kirigami.FormLayout {
+
+        // === MASTER ENABLE ===
+        CheckBox {
+            id: weatherEffectsCheckBox
+            text: "Enable all weather effects"
+            Kirigami.FormData.label: "Weather Effects:"
         }
 
-        // Humidity effect (if temp > 15°C)
-        var humidityEffect = 0
-        if (temp > 15 && humidity > 70) {
-            humidityEffect = (humidity - 70) / 10
+        Label {
+            text: "Master toggle for all atmospheric effects (particles, sounds, wallpapers)"
+            wrapMode: Text.Wrap
+            opacity: 0.7
+            font.pointSize: Kirigami.Theme.smallFont.pointSize
         }
 
-        return Math.round(windChill + humidityEffect)
-    }
-
-    // Comfort Level
-    property string comfortLevel: {
-        if (!currentWeatherModel) return "Unknown"
-        
-        var temp = currentWeatherModel.temperature || 0
-
-        if (temp < 5) return "Freezing"
-        else if (temp < 10) return "Cold"
-        else if (temp < 15) return "Cool"
-        else if (temp < 20) return "Comfortable"
-        else if (temp < 25) return "Warm"
-        else if (temp < 30) return "Hot"
-        else return "Very Hot"
-    }
-
-    // Weather Mood
-    property string weatherMood: {
-        if (!currentWeatherModel) return "Calm"
-        
-        var windSpeed = currentWeatherModel.windSpeedMps || 0
-        var cond = currentWeatherModel.condition ? currentWeatherModel.condition.toLowerCase() : ""
-
-        if (cond.includes("storm") || cond.includes("thunder")) return "Stormy"
-        else if (windSpeed > 15) return "Gusty"
-        else if (windSpeed > 8) return "Breezy"
-        else if (cond.includes("rain") || cond.includes("drizzle")) return "Wet"
-        else if (cond.includes("snow")) return "Snowy"
-        else if (cond.includes("cloudy") || cond.includes("overcast")) return "Overcast"
-        else return "Calm"
-    }
-
-    // Wind Direction
-    property real windDirection: currentWeatherModel && currentWeatherModel.windDirection ? currentWeatherModel.windDirection : 0
-
-    // === PARTICLE EFFECTS ===
-    
-    Item {
-        id: particleEffectsContainer
-        anchors.fill: parent
-        visible: plasmoid.configuration.particleEffectsEnabled
-        z: 1001
-
-        // Rain Particles
         Item {
-            id: rainContainer
-            anchors.fill: parent
-            rotation: windDirection - 90
-            visible: currentWeatherModel && (
-                currentWeatherModel.condition.toLowerCase().includes("rain") ||
-                currentWeatherModel.condition.toLowerCase().includes("drizzle")
-            )
-
-            Repeater {
-                model: 50
-                delegate: Rectangle {
-                    width: 2
-                    height: Math.random() * 15 + 10
-                    color: "rgba(200, 220, 255, 0.7)"
-                    radius: 1
-                    x: Math.random() * parent.width
-                    y: -height
-
-                    NumberAnimation on y {
-                        from: -height
-                        to: parent.height + height
-                        duration: Math.random() * 1000 + 1000
-                        loops: Animation.Infinite
-                    }
-
-                    Component.onCompleted: {
-                        // Stagger start times
-                        y = Math.random() * parent.height
-                    }
-                }
-            }
+            Kirigami.FormData.isSection: true
+            Kirigami.FormData.label: "Visual Effects"
         }
 
-        // Snow Particles
+        // === PARTICLE EFFECTS ===
+        CheckBox {
+            id: particleEffectsCheckBox
+            text: "Enable rain and snow particles"
+            Kirigami.FormData.label: "Particles:"
+            enabled: weatherEffectsCheckBox.checked
+        }
+
+        Label {
+            text: "Animated rain drops and snowflakes aligned with wind direction"
+            wrapMode: Text.Wrap
+            opacity: 0.7
+            font.pointSize: Kirigami.Theme.smallFont.pointSize
+        }
+
+        // === FEELS LIKE TOOLTIP ===
+        CheckBox {
+            id: feelsLikeTooltipCheckBox
+            text: "Show 'Feels Like' temperature on hover"
+            Kirigami.FormData.label: "Tooltip:"
+            enabled: weatherEffectsCheckBox.checked
+        }
+
+        Label {
+            text: "Display wind chill and comfort level when hovering over temperature"
+            wrapMode: Text.Wrap
+            opacity: 0.7
+            font.pointSize: Kirigami.Theme.smallFont.pointSize
+        }
+
         Item {
-            id: snowContainer
-            anchors.fill: parent
-            rotation: windDirection - 90
-            visible: currentWeatherModel && (
-                currentWeatherModel.condition.toLowerCase().includes("snow") ||
-                currentWeatherModel.condition.toLowerCase().includes("sleet")
-            )
-
-            Repeater {
-                model: 30
-                delegate: Rectangle {
-                    width: Math.random() * 6 + 4
-                    height: width
-                    color: "rgba(255, 255, 255, 0.9)"
-                    radius: width / 2
-                    x: Math.random() * parent.width
-                    y: -height
-
-                    NumberAnimation on y {
-                        from: -height
-                        to: parent.height + height
-                        duration: Math.random() * 3000 + 3000
-                        loops: Animation.Infinite
-                    }
-
-                    NumberAnimation on rotation {
-                        from: 0
-                        to: 360
-                        duration: Math.random() * 2000 + 2000
-                        loops: Animation.Infinite
-                    }
-
-                    Component.onCompleted: {
-                        y = Math.random() * parent.height
-                    }
-                }
-            }
+            Kirigami.FormData.isSection: true
+            Kirigami.FormData.label: "Audio Effects"
         }
 
-        // Sun Glint
-        Rectangle {
-            id: sunGlint
-            width: 40
-            height: 40
-            radius: 20
-            color: "white"
-            opacity: 0
-            z: 1003
-            anchors.horizontalCenter: parent.horizontalCenter
-            anchors.top: parent.top
-            anchors.topMargin: 20
-            visible: currentWeatherModel && (
-                !currentWeatherModel.condition.toLowerCase().includes("cloud") &&
-                !currentWeatherModel.condition.toLowerCase().includes("rain") &&
-                !currentWeatherModel.condition.toLowerCase().includes("snow")
-            )
-
-            Behavior on opacity {
-                NumberAnimation { duration: 1500 }
-            }
-
-            SequentialAnimation on x {
-                loops: Animation.Infinite
-                running: visible
-                PropertyAnimation { to: parent.width / 2 - 20; duration: 4000 }
-                PropertyAnimation { to: parent.width / 2 + 20; duration: 4000 }
-            }
-
-            Timer {
-                interval: 3000
-                repeat: true
-                running: parent.visible
-                onTriggered: {
-                    parent.opacity = 0.9
-                    opacityTimer.start()
-                }
-
-                Timer {
-                    id: opacityTimer
-                    interval: 600
-                    onTriggered: sunGlint.opacity = 0
-                }
-            }
+        // === SOUND EFFECTS ===
+        CheckBox {
+            id: soundEffectsCheckBox
+            text: "Enable weather sounds"
+            Kirigami.FormData.label: "Sounds:"
+            enabled: weatherEffectsCheckBox.checked
         }
 
-        // Day/Night Overlay
-        Rectangle {
-            id: lightingOverlay
-            anchors.fill: parent
-            color: "black"
-            z: 999
-
-            Behavior on opacity {
-                NumberAnimation {
-                    duration: 3000
-                    easing.type: Easing.InOutQuad
-                }
-            }
-
-            opacity: {
-                if (!currentWeatherModel) return 0
-                
-                var cond = currentWeatherModel.condition.toLowerCase()
-                var hour = new Date().getHours()
-
-                if (cond.includes("snow") || cond.includes("sleet")) return 0.5
-                else if (cond.includes("rain") || cond.includes("drizzle")) return 0.4
-                else if (cond.includes("cloudy") || cond.includes("overcast")) return 0.3
-                else if (hour >= 18 || hour < 6) return 0.6
-                else return 0.0
-            }
-        }
-    }
-
-    // === FEELS LIKE TOOLTIP ===
-    
-    Item {
-        id: feelsLikeTooltip
-        width: 180
-        height: 80
-        visible: false
-        z: 2000
-        opacity: 0
-
-        Behavior on opacity {
-            NumberAnimation {
-                duration: 200
-                easing.type: Easing.InOutQuad
-            }
+        Label {
+            text: "Play ambient sounds for rain, wind, and other weather conditions"
+            wrapMode: Text.Wrap
+            opacity: 0.7
+            font.pointSize: Kirigami.Theme.smallFont.pointSize
         }
 
-        Rectangle {
-            anchors.fill: parent
-            color: theme.backgroundColor
-            radius: 12
-            border.color: theme.textColor
-            border.width: 1
-            opacity: 0.95
-
-            Rectangle {
-                anchors.fill: parent
-                anchors.margins: 1
-                color: "transparent"
-                border.color: Qt.rgba(theme.textColor.r, theme.textColor.g, theme.textColor.b, 0.1)
-                border.width: 1
-                radius: 11
-            }
+        Item {
+            Kirigami.FormData.isSection: true
+            Kirigami.FormData.label: "Dynamic Wallpapers"
         }
 
-        Column {
-            anchors.centerIn: parent
-            spacing: 2
+        // === WALLPAPER EFFECTS ===
+        CheckBox {
+            id: wallpaperEffectsCheckBox
+            text: "Enable dynamic wallpaper changes"
+            Kirigami.FormData.label: "Wallpapers:"
+            enabled: weatherEffectsCheckBox.checked
+        }
+
+        Label {
+            text: "Automatically change wallpaper based on time of day and weather conditions"
+            wrapMode: Text.Wrap
+            opacity: 0.7
+            font.pointSize: Kirigami.Theme.smallFont.pointSize
+        }
+
+        CheckBox {
+            id: useSunriseSunsetCheckBox
+            text: "Use sunrise/sunset times (when available)"
+            Kirigami.FormData.label: "Timing:"
+            enabled: wallpaperEffectsCheckBox.checked && weatherEffectsCheckBox.checked
+        }
+
+        Label {
+            text: "Use actual sunrise/sunset from weather data instead of fixed times"
+            wrapMode: Text.Wrap
+            opacity: 0.7
+            font.pointSize: Kirigami.Theme.smallFont.pointSize
+        }
+
+        Item {
+            Kirigami.FormData.isSection: true
+            Kirigami.FormData.label: "Wallpaper Images"
+        }
+
+        // === MORNING WALLPAPER ===
+        TextField {
+            id: wallpaperMorningField
+            placeholderText: "/path/to/morning-wallpaper.jpg"
+            Kirigami.FormData.label: "Morning (6am-12pm):"
+            enabled: wallpaperEffectsCheckBox.checked && weatherEffectsCheckBox.checked
+        }
+
+        Button {
+            text: "Browse…"
+            icon.name: "document-open"
+            onClicked: {
+                currentWallpaperSelection = 0
+                wallpaperDialog.open()
+            }
+            enabled: wallpaperEffectsCheckBox.checked && weatherEffectsCheckBox.checked
+        }
+
+        // === AFTERNOON WALLPAPER ===
+        TextField {
+            id: wallpaperAfternoonField
+            placeholderText: "/path/to/afternoon-wallpaper.jpg"
+            Kirigami.FormData.label: "Afternoon (12pm-5pm):"
+            enabled: wallpaperEffectsCheckBox.checked && weatherEffectsCheckBox.checked
+        }
+
+        Button {
+            text: "Browse…"
+            icon.name: "document-open"
+            onClicked: {
+                currentWallpaperSelection = 1
+                wallpaperDialog.open()
+            }
+            enabled: wallpaperEffectsCheckBox.checked && weatherEffectsCheckBox.checked
+        }
+
+        // === EVENING WALLPAPER ===
+        TextField {
+            id: wallpaperEveningField
+            placeholderText: "/path/to/evening-wallpaper.jpg"
+            Kirigami.FormData.label: "Evening (5pm-8pm):"
+            enabled: wallpaperEffectsCheckBox.checked && weatherEffectsCheckBox.checked
+        }
+
+        Button {
+            text: "Browse…"
+            icon.name: "document-open"
+            onClicked: {
+                currentWallpaperSelection = 2
+                wallpaperDialog.open()
+            }
+            enabled: wallpaperEffectsCheckBox.checked && weatherEffectsCheckBox.checked
+        }
+
+        // === NIGHT WALLPAPER ===
+        TextField {
+            id: wallpaperNightField
+            placeholderText: "/path/to/night-wallpaper.jpg"
+            Kirigami.FormData.label: "Night (8pm-6am):"
+            enabled: wallpaperEffectsCheckBox.checked && weatherEffectsCheckBox.checked
+        }
+
+        Button {
+            text: "Browse…"
+            icon.name: "document-open"
+            onClicked: {
+                currentWallpaperSelection = 3
+                wallpaperDialog.open()
+            }
+            enabled: wallpaperEffectsCheckBox.checked && weatherEffectsCheckBox.checked
+        }
+
+        Item {
+            Kirigami.FormData.isSection: true
+            Kirigami.FormData.label: "Brightness/Shade Adjustment"
+        }
+
+        Label {
+            text: "Adjust wallpaper brightness for each time period (0.0 = very dark, 1.0 = original brightness)"
+            wrapMode: Text.Wrap
+            opacity: 0.7
+            font.pointSize: Kirigami.Theme.smallFont.pointSize
+        }
+
+        // === MORNING SHADE FACTOR ===
+        RowLayout {
+            Kirigami.FormData.label: "Morning brightness:"
+            Layout.fillWidth: true
+            enabled: wallpaperEffectsCheckBox.checked && weatherEffectsCheckBox.checked
             
-            Text {
-                text: "Feels like " + feelsLikeTemp + "°"
-                font.pixelSize: 14
-                color: theme.textColor
-                font.bold: true
-                anchors.horizontalCenter: parent.horizontalCenter
+            Slider {
+                id: shadeFactorMorningSlider
+                from: 0.3
+                to: 1.0
+                stepSize: 0.05
+                Layout.fillWidth: true
             }
             
-            Text {
-                text: comfortLevel + " • " + weatherMood
-                font.pixelSize: 11
-                color: Qt.rgba(theme.textColor.r, theme.textColor.g, theme.textColor.b, 0.7)
-                anchors.horizontalCenter: parent.horizontalCenter
+            Label {
+                text: shadeFactorMorningSlider.value.toFixed(2)
+                Layout.minimumWidth: 40
             }
         }
-    }
 
-    // === SOUND EFFECTS ===
-    
-    QtObject {
-        id: soundEffects
-        property bool enabled: plasmoid.configuration.soundEffectsEnabled
-
-        // Sound effect placeholders - implement with actual audio files
-        function playRainSound() {
-            if (!enabled) return
-            console.log("Playing rain sound")
-            // TODO: Implement actual audio playback
-        }
-
-        function playWindSound() {
-            if (!enabled) return
-            console.log("Playing wind sound")
-            // TODO: Implement actual audio playback
-        }
-
-        function playSnowSound() {
-            if (!enabled) return
-            console.log("Playing snow sound")
-            // TODO: Implement actual audio playback
-        }
-    }
-
-    // === WALLPAPER CONTROLLER ===
-    
-    QtObject {
-        id: wallpaperController
-        property bool enabled: plasmoid.configuration.wallpaperEffectsEnabled
-
-        function updateWallpaper() {
-            if (!enabled) return
-            if (!executable) {
-                console.error("WeatherEffects: executable not available")
-                return
-            }
-
-            var wallpaperPath = getWallpaperPath()
-            if (!wallpaperPath || wallpaperPath === "") return
-
-            var brightness = calculateBrightness()
-            console.log("Updating wallpaper:", wallpaperPath, "brightness:", brightness)
-
-            // TODO: Implement wallpaper setting via executable
-            // Similar to the diary.js approach
-        }
-
-        function getWallpaperPath() {
-            var hour = new Date().getHours()
-            var useSunData = plasmoid.configuration.useSunriseSunset
-
-            // TODO: Implement sunrise/sunset logic when available
+        // === AFTERNOON SHADE FACTOR ===
+        RowLayout {
+            Kirigami.FormData.label: "Afternoon brightness:"
+            Layout.fillWidth: true
+            enabled: wallpaperEffectsCheckBox.checked && weatherEffectsCheckBox.checked
             
-            if (hour >= 6 && hour < 12) return plasmoid.configuration.wallpaperMorning
-            else if (hour >= 12 && hour < 17) return plasmoid.configuration.wallpaperAfternoon
-            else if (hour >= 17 && hour < 20) return plasmoid.configuration.wallpaperEvening
-            else return plasmoid.configuration.wallpaperNight
+            Slider {
+                id: shadeFactorAfternoonSlider
+                from: 0.3
+                to: 1.0
+                stepSize: 0.05
+                Layout.fillWidth: true
+            }
+            
+            Label {
+                text: shadeFactorAfternoonSlider.value.toFixed(2)
+                Layout.minimumWidth: 40
+            }
         }
 
-        function calculateBrightness() {
-            var hour = new Date().getHours()
-            var baseBrightness = 100
-
-            if (hour >= 6 && hour < 12) baseBrightness = 85
-            else if (hour >= 12 && hour < 17) baseBrightness = 100
-            else if (hour >= 17 && hour < 20) baseBrightness = 75
-            else baseBrightness = 40
-
-            // Adjust for weather
-            if (!currentWeatherModel) return baseBrightness
-
-            var cond = currentWeatherModel.condition.toLowerCase()
-            var weatherAdj = 0
-
-            if (cond.includes("snow")) weatherAdj = 10
-            else if (cond.includes("rain") || cond.includes("drizzle")) weatherAdj = -15
-            else if (cond.includes("cloudy") || cond.includes("overcast")) weatherAdj = -20
-            else if (cond.includes("clear") || cond.includes("sun")) weatherAdj = 5
-
-            return Math.max(20, Math.min(100, baseBrightness + weatherAdj))
+        // === EVENING SHADE FACTOR ===
+        RowLayout {
+            Kirigami.FormData.label: "Evening brightness:"
+            Layout.fillWidth: true
+            enabled: wallpaperEffectsCheckBox.checked && weatherEffectsCheckBox.checked
+            
+            Slider {
+                id: shadeFactorEveningSlider
+                from: 0.3
+                to: 1.0
+                stepSize: 0.05
+                Layout.fillWidth: true
+            }
+            
+            Label {
+                text: shadeFactorEveningSlider.value.toFixed(2)
+                Layout.minimumWidth: 40
+            }
         }
-    }
 
-    // === INITIALIZATION ===
-    
-    Component.onCompleted: {
-        console.log("WeatherEffects initialized")
-        
-        // Initial wallpaper update
-        wallpaperController.updateWallpaper()
-
-        // Watch for weather changes
-        if (currentWeatherModel) {
-            currentWeatherModel.onConditionChanged.connect(function() {
-                var cond = currentWeatherModel.condition.toLowerCase()
-                
-                if (cond.includes("rain") && soundEffects.enabled) {
-                    soundEffects.playRainSound()
-                }
-                if (cond.includes("snow") && soundEffects.enabled) {
-                    soundEffects.playSnowSound()
-                }
-                
-                wallpaperController.updateWallpaper()
-            })
+        // === NIGHT SHADE FACTOR ===
+        RowLayout {
+            Kirigami.FormData.label: "Night brightness:"
+            Layout.fillWidth: true
+            enabled: wallpaperEffectsCheckBox.checked && weatherEffectsCheckBox.checked
+            
+            Slider {
+                id: shadeFactorNightSlider
+                from: 0.3
+                to: 1.0
+                stepSize: 0.05
+                Layout.fillWidth: true
+            }
+            
+            Label {
+                text: shadeFactorNightSlider.value.toFixed(2)
+                Layout.minimumWidth: 40
+            }
         }
-    }
 
-    // === UPDATE TIMER ===
-    
-    Timer {
-        interval: 5 * 60 * 1000 // 5 minutes
-        repeat: true
-        running: wallpaperController.enabled
-        onTriggered: wallpaperController.updateWallpaper()
+        Label {
+            text: "Leave wallpaper paths empty to disable automatic wallpaper changes\nBrightness adjustment uses ImageMagick and will be applied based on time and weather"
+            wrapMode: Text.Wrap
+            opacity: 0.7
+            font.pointSize: Kirigami.Theme.smallFont.pointSize
+        }
     }
 }

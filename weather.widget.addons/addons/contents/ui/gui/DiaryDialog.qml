@@ -1,4 +1,4 @@
-// Belongs in ..contents/ui/gui/DiaryDialog.qml version 11
+// Belongs in ..contents/ui/gui/DiaryDialog.qml version 10
 /*
  * X-Seti - Jan 25 2025 - Addons for Weather Widget Plus (Credit - Martin Kotelnik)
  *
@@ -14,6 +14,17 @@
  * along with this program.  If not, see <http: //www.gnu.org/licenses/>.
 */
 
+//import QtQuick 2.15
+//import QtQuick.Layouts 1.15
+//import QtQuick.Controls 2.15
+//import QtQuick.Window 2.15
+
+//import org.kde.plasma.plasmoid 2.0
+//import org.kde.plasma.core 2.0 as PlasmaCore
+//import org.kde.kirigami 2.5 as Kirigami
+//import org.kde.plasma.components 3.0 as PlasmaComponents
+//import org.kde.plasma.plasma5support as Plasma5Support
+
 import QtQuick 2.15
 import QtQuick.Layouts
 import QtQuick.Window 2.15
@@ -25,6 +36,7 @@ import org.kde.plasma.plasma5support as Plasma5Support
 import org.kde.kirigami as Kirigami
 
 import "../../code/diary.js" as Diary
+import "../../code/weatherMapping.js" as WeatherMap
 
 Item {
 
@@ -101,10 +113,12 @@ Item {
                         font.pointSize: Kirigami.Theme.defaultFont.pointSize + 2
                         font.bold: true
                     }
+                    
+                    // Show condition if available
                     Label {
-                        text: "Condition: " + (diaryDialogWindow.weatherData && diaryDialogWindow.weatherData.condition
-                        ? diaryDialogWindow.weatherData.condition
-                        : "N/A")
+                        visible: diaryDialogWindow.weatherData && diaryDialogWindow.weatherData.condition && diaryDialogWindow.weatherData.condition !== ""
+                        text: diaryDialogWindow.weatherData && diaryDialogWindow.weatherData.condition ? 
+                              " Condition: " + diaryDialogWindow.weatherData.condition : ""
                         font.pointSize: Kirigami.Theme.defaultFont.pointSize + 2
                         font.bold: true
                     }
@@ -135,6 +149,13 @@ Item {
                             executable,
                             plasmoid.configuration.logPath,
                             plasmoid.configuration.diaryLayoutType
+                        )
+                        // FIX: Actually open the log file in editor
+                        Diary.openLogFile(
+                            plasmoid.configuration.logPath,
+                            plasmoid.configuration.diaryEditorType,
+                            plasmoid.configuration.diaryCustomEditor,
+                            executable
                         )
                         diaryTextInput.text = ""
                         diaryDialogWindow.visible = false
@@ -182,12 +203,17 @@ Item {
             text: i18n("Add a weather notation")
             icon.name: "document-edit"
             onTriggered: {
+                // Get weather description from icon code
+                var weatherCondition = WeatherMap.getWeatherDescription(
+                    currentWeatherModel ? currentWeatherModel.iconName : 0,
+                    currentPlace ? currentPlace.providerId : ""
+                )
+                
                 var tempWeatherData = {
                     temperature: currentWeatherModel ? currentWeatherModel.temperature : "N/A",
                     humidity: currentWeatherModel ? currentWeatherModel.humidity : "N/A",
                     pressureHpa: currentWeatherModel ? currentWeatherModel.pressureHpa : "N/A",
-                    //condition: currentWeatherModel ? currentWeatherModel.condition : "No data"
-                    condition: currentWeatherModel ? condition: currentProvider.currentCondition : "No data"
+                    condition: weatherCondition
                 }
                 showDiaryEntryDialog(tempWeatherData)
             }
@@ -196,14 +222,14 @@ Item {
             text: i18n("Show notation log")
             icon.name: "document-open"
             onTriggered: {
-                // FIX: Properly call openLogFile with executable
                 Diary.openLogFile(
                     plasmoid.configuration.logPath,
                     plasmoid.configuration.diaryEditorType,
                     plasmoid.configuration.diaryCustomEditor,
-                    executable
+                    executable  // FIX: Add executable parameter
                 )
             }
         }
     ]
 }
+

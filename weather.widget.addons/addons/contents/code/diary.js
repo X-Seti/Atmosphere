@@ -120,8 +120,9 @@ function appendWeather(weatherData, notes, executable, logPath, layoutType) {
     var dateFull = getFullDay(now) + ", " + day + " " + getFullMonth(now) + " " + year
     var dateAlt = getShortDay(now) + ", " + getFullMonth(now) + " " + day + ", " + year
     
-    // Get weather condition, handle undefined
-    var condition = weatherData.condition || "Unknown"
+    // Get weather condition - handle if missing or empty
+    var condition = weatherData.condition || ""
+    var hasCondition = condition && condition.trim() !== ""
 
     // Build entry based on layout type
     var entry = ""
@@ -129,7 +130,9 @@ function appendWeather(weatherData, notes, executable, logPath, layoutType) {
     if (layoutType === 0) {
         // LEGACY FORMAT - Original style
         entry = "\n" + dateShort + "\n"
-        entry += "Weather: " + condition + "\n"
+        if (hasCondition) {
+            entry += "Weather: " + condition + "\n"
+        }
         entry += "Temperature: " + weatherData.temperature + "°\n"
         entry += "Humidity: " + weatherData.humidity + "%\n"
         entry += "Pressure: " + weatherData.pressureHpa + " hPa\n"
@@ -140,7 +143,11 @@ function appendWeather(weatherData, notes, executable, logPath, layoutType) {
         
     } else if (layoutType === 1) {
         // COMPACT FORMAT - Single line
-        entry = dateShort + " " + hours + ":" + minutes + " - Weather: " + condition + "\n"
+        entry = dateShort + " " + hours + ":" + minutes
+        if (hasCondition) {
+            entry += " - Weather: " + condition
+        }
+        entry += "\n"
         entry += "Temperature: " + weatherData.temperature + "° - Humidity: " + weatherData.humidity + "% - Pressure: " + weatherData.pressureHpa + " hPa\n"
         if (notes && notes.trim() !== "") {
             entry += "\nNotes: " + notes.trim() + "\n"
@@ -149,7 +156,11 @@ function appendWeather(weatherData, notes, executable, logPath, layoutType) {
         
     } else if (layoutType === 2) {
         // DETAILED FORMAT - Full day name
-        entry = dateFull + " " + hours + ":" + minutes + " - Weather: " + condition + "\n"
+        entry = dateFull + " " + hours + ":" + minutes
+        if (hasCondition) {
+            entry += " - Weather: " + condition
+        }
+        entry += "\n"
         entry += "Temperature: " + weatherData.temperature + "° - Humidity: " + weatherData.humidity + "% - Pressure: " + weatherData.pressureHpa + " hPa\n"
         if (notes && notes.trim() !== "") {
             entry += "\nNotes: " + notes.trim() + "\n"
@@ -159,7 +170,9 @@ function appendWeather(weatherData, notes, executable, logPath, layoutType) {
     } else if (layoutType === 3) {
         // MARKDOWN FORMAT - Bullet points
         entry = "\n" + dateShort + " " + hours + ":" + minutes + "\n"
-        entry += "* Weather: " + condition + "\n"
+        if (hasCondition) {
+            entry += "* Weather: " + condition + "\n"
+        }
         entry += "* Temperature: " + weatherData.temperature + "°\n"
         entry += "* Humidity: " + weatherData.humidity + "%\n"
         entry += "* Pressure: " + weatherData.pressureHpa + " hPa\n"
@@ -171,7 +184,9 @@ function appendWeather(weatherData, notes, executable, logPath, layoutType) {
     } else {
         // ALTERNATIVE DATE FORMAT - Month name first
         entry = "\n" + dateAlt + " " + hours + ":" + minutes + "\n"
-        entry += "Weather: " + condition + "\n"
+        if (hasCondition) {
+            entry += "Weather: " + condition + "\n"
+        }
         entry += "Temperature: " + weatherData.temperature + "°\n"
         entry += "Humidity: " + weatherData.humidity + "%\n"
         entry += "Pressure: " + weatherData.pressureHpa + " hPa\n"

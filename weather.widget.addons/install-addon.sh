@@ -13,13 +13,13 @@ echo "== Weather Widget Plus Addon Installer =="
 # Sanity checks
 # -----------------------------
 if [[ ! -d "$PLASMOID" ]]; then
-  echo "❌ Plasmoid not found:"
+  echo "✗ Plasmoid not found:"
   echo "   $PLASMOID"
   exit 1
 fi
 
 if [[ ! -f "$MAINQML" ]]; then
-  echo "❌ main.qml not found:"
+  echo "✗ main.qml not found:"
   echo "   $MAINQML"
   exit 1
 fi
@@ -59,6 +59,9 @@ sed -i '/^import /a import "../code/diary.js" as Diary' "$MAINQML"
 grep -q 'import "../code/dailyState.js"' "$MAINQML" || \
 sed -i '/^import /a import "../code/dailyState.js" as State' "$MAINQML"
 
+grep -q 'import "../code/weatherMapping.js"' "$MAINQML" || \
+sed -i '/^import /a import "../code/weatherMapping.js" as WeatherMap' "$MAINQML"
+
 # 3) Insert DiaryDialog object (before first Timer)
 if ! grep -q 'DiaryUI.DiaryDialog' "$MAINQML"; then
   sed -i '/^ *Timer {/i\
@@ -85,24 +88,26 @@ if ! grep -q '=== DIARY LOGGING First Patch ===' "$MAINQML"; then
         console.log("DEBUG: Date check - today:", today, "lastLogged:", plasmoid.configuration.lastLoggedDate || "(never)", "different:", (plasmoid.configuration.lastLoggedDate || "") !== today)\
         if (diaryLoggingEnabled && (plasmoid.configuration.lastLoggedDate || "") !== today) {\
             console.log("DEBUG: Opening diary dialog!")\
+            var weatherCondition = WeatherMap.getWeatherDescription(currentWeatherModel.iconName, currentPlace.providerId)\
             diaryDialog.showDiaryEntryDialog({\
                 temperature: currentWeatherModel.temperature,\
                 humidity: currentWeatherModel.humidity,\
                 pressureHpa: currentWeatherModel.pressureHpa,\
-                condition: currentWeatherModel.condition\
+                condition: weatherCondition\
             })\
             plasmoid.configuration.lastLoggedDate = today\
         }\
 ' "$MAINQML"
-
+fi
 
 # -----------------------------
 # Verify
 # -----------------------------
-grep -q 'import "../code/diary.js"' "$MAINQML" || { echo "❌ diary import missing"; exit 1; }
-grep -q 'import "../code/dailyState.js"' "$MAINQML" || { echo "❌ dailyState import missing"; exit 1; }
-grep -q 'DiaryUI.DiaryDialog' "$MAINQML" || { echo "❌ DiaryDialog block missing"; exit 1; }
-grep -q '=== DIARY LOGGING First Patch ===' "$MAINQML" || { echo "❌ hook missing"; exit 1; }
+grep -q 'import "../code/diary.js"' "$MAINQML" || { echo "✗ diary import missing"; exit 1; }
+grep -q 'import "../code/dailyState.js"' "$MAINQML" || { echo "✗ dailyState import missing"; exit 1; }
+grep -q 'import "../code/weatherMapping.js"' "$MAINQML" || { echo "✗ weatherMapping import missing"; exit 1; }
+grep -q 'DiaryUI.DiaryDialog' "$MAINQML" || { echo "✗ DiaryDialog block missing"; exit 1; }
+grep -q '=== DIARY LOGGING First Patch ===' "$MAINQML" || { echo "✗ hook missing"; exit 1; }
 
 echo "✓ Imports OK"
 echo "✓ Hook OK"

@@ -33,6 +33,12 @@ Item {
     property alias cfg_wallpaperEvening: wallpaperEveningField.text
     property alias cfg_wallpaperNight: wallpaperNightField.text
     
+    // Shade factors
+    property alias cfg_shadeFactorMorning: shadeFactorMorningSlider.value
+    property alias cfg_shadeFactorAfternoon: shadeFactorAfternoonSlider.value
+    property alias cfg_shadeFactorEvening: shadeFactorEveningSlider.value
+    property alias cfg_shadeFactorNight: shadeFactorNightSlider.value
+    
     property alias cfg_useSunriseSunset: useSunriseSunsetCheckBox.checked
 
     property int currentWallpaperSelection: 0
@@ -170,7 +176,7 @@ Item {
         TextField {
             id: wallpaperMorningField
             placeholderText: "/path/to/morning-wallpaper.jpg"
-            Kirigami.FormData.label: "Morning:"
+            Kirigami.FormData.label: "Morning (6am-12pm):"
             enabled: wallpaperEffectsCheckBox.checked && weatherEffectsCheckBox.checked
         }
 
@@ -188,7 +194,7 @@ Item {
         TextField {
             id: wallpaperAfternoonField
             placeholderText: "/path/to/afternoon-wallpaper.jpg"
-            Kirigami.FormData.label: "Afternoon:"
+            Kirigami.FormData.label: "Afternoon (12pm-5pm):"
             enabled: wallpaperEffectsCheckBox.checked && weatherEffectsCheckBox.checked
         }
 
@@ -206,7 +212,7 @@ Item {
         TextField {
             id: wallpaperEveningField
             placeholderText: "/path/to/evening-wallpaper.jpg"
-            Kirigami.FormData.label: "Evening:"
+            Kirigami.FormData.label: "Evening (5pm-8pm):"
             enabled: wallpaperEffectsCheckBox.checked && weatherEffectsCheckBox.checked
         }
 
@@ -224,7 +230,7 @@ Item {
         TextField {
             id: wallpaperNightField
             placeholderText: "/path/to/night-wallpaper.jpg"
-            Kirigami.FormData.label: "Night:"
+            Kirigami.FormData.label: "Night (8pm-6am):"
             enabled: wallpaperEffectsCheckBox.checked && weatherEffectsCheckBox.checked
         }
 
@@ -238,8 +244,100 @@ Item {
             enabled: wallpaperEffectsCheckBox.checked && weatherEffectsCheckBox.checked
         }
 
+        Item {
+            Kirigami.FormData.isSection: true
+            Kirigami.FormData.label: "Brightness/Shade Adjustment"
+        }
+
         Label {
-            text: "Leave wallpaper paths empty to disable automatic wallpaper changes\nWallpapers will be brightness-adjusted based on time and weather"
+            text: "Adjust wallpaper brightness for each time period (0.0 = very dark, 1.0 = original brightness)"
+            wrapMode: Text.Wrap
+            opacity: 0.7
+            font.pointSize: Kirigami.Theme.smallFont.pointSize
+        }
+
+        // === MORNING SHADE FACTOR ===
+        RowLayout {
+            Kirigami.FormData.label: "Morning brightness:"
+            Layout.fillWidth: true
+            enabled: wallpaperEffectsCheckBox.checked && weatherEffectsCheckBox.checked
+            
+            Slider {
+                id: shadeFactorMorningSlider
+                from: 0.3
+                to: 1.0
+                stepSize: 0.05
+                Layout.fillWidth: true
+            }
+            
+            Label {
+                text: shadeFactorMorningSlider.value.toFixed(2)
+                Layout.minimumWidth: 40
+            }
+        }
+
+        // === AFTERNOON SHADE FACTOR ===
+        RowLayout {
+            Kirigami.FormData.label: "Afternoon brightness:"
+            Layout.fillWidth: true
+            enabled: wallpaperEffectsCheckBox.checked && weatherEffectsCheckBox.checked
+            
+            Slider {
+                id: shadeFactorAfternoonSlider
+                from: 0.3
+                to: 1.0
+                stepSize: 0.05
+                Layout.fillWidth: true
+            }
+            
+            Label {
+                text: shadeFactorAfternoonSlider.value.toFixed(2)
+                Layout.minimumWidth: 40
+            }
+        }
+
+        // === EVENING SHADE FACTOR ===
+        RowLayout {
+            Kirigami.FormData.label: "Evening brightness:"
+            Layout.fillWidth: true
+            enabled: wallpaperEffectsCheckBox.checked && weatherEffectsCheckBox.checked
+            
+            Slider {
+                id: shadeFactorEveningSlider
+                from: 0.3
+                to: 1.0
+                stepSize: 0.05
+                Layout.fillWidth: true
+            }
+            
+            Label {
+                text: shadeFactorEveningSlider.value.toFixed(2)
+                Layout.minimumWidth: 40
+            }
+        }
+
+        // === NIGHT SHADE FACTOR ===
+        RowLayout {
+            Kirigami.FormData.label: "Night brightness:"
+            Layout.fillWidth: true
+            enabled: wallpaperEffectsCheckBox.checked && weatherEffectsCheckBox.checked
+            
+            Slider {
+                id: shadeFactorNightSlider
+                from: 0.3
+                to: 1.0
+                stepSize: 0.05
+                Layout.fillWidth: true
+            }
+            
+            Label {
+                text: shadeFactorNightSlider.value.toFixed(2)
+                Layout.minimumWidth: 40
+            }
+        }
+
+        Label {
+            text: "Leave wallpaper paths empty to disable automatic wallpaper changes\nBrightness adjustment uses ImageMagick and will be applied based on time and weather"
             wrapMode: Text.Wrap
             opacity: 0.7
             font.pointSize: Kirigami.Theme.smallFont.pointSize

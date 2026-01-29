@@ -260,6 +260,18 @@
         <entry name="wallpaperNight" type="String">
             <default></default>
         </entry>
+        <entry name="shadeFactorMorning" type="Double">
+            <default>0.85</default>
+        </entry>
+        <entry name="shadeFactorAfternoon" type="Double">
+            <default>1.0</default>
+        </entry>
+        <entry name="shadeFactorEvening" type="Double">
+            <default>0.75</default>
+        </entry>
+        <entry name="shadeFactorNight" type="Double">
+            <default>0.6</default>
+        </entry>
         <entry name="useSunriseSunset" type="Bool">
             <default>true</default>
         </entry>
