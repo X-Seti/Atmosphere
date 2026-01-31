@@ -23,6 +23,11 @@ ConfigModel {
         source: 'config/ConfigEffects.qml'
     }
     ConfigCategory {
+        name: i18n("Demo Effects")
+        icon: 'media-playback-start'
+        source: 'config/ConfigDemoEffects.qml'
+    }
+    ConfigCategory {
         name: i18n("Meteogram")
         icon: 'applications-science'
         source: 'config/ConfigMeteogram.qml'

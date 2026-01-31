@@ -43,6 +43,10 @@ Item {
 
     property int currentWallpaperSelection: 0
 
+    DemoEffects {
+        anchors.fill: parent
+    }
+
     FileDialog {
         id: wallpaperDialog
         title: "Choose wallpaper image"
