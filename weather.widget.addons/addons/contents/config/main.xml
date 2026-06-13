@@ -230,11 +230,6 @@
         <entry name="lastLoggedDate" type="String">
             <default></default>
         </entry>
-        <entry name="lastPromptDate" type="String">
-            <default></default>
-        </entry>
-            <default></default>
-        </entry>
     </group>
 
     <group name="WeatherEffects">

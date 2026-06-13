@@ -402,39 +402,26 @@ PlasmoidItem {
         dbgprint("meteogramModelChanged:" + meteogramModelChanged)
 
 
-        // === DIARY LOGGING ===
+        // === DIARY LOGGING First Patch ===
+        console.log("DEBUG: Checking diary conditions - diaryEnabled:", diaryLoggingEnabled, "weatherModel exists:", !!currentWeatherModel)
         if (!currentWeatherModel || currentWeatherModel.temperature === -9999) {
+            console.log("DEBUG: Weather model not ready - exists:", !!currentWeatherModel, "temp:", currentWeatherModel ? currentWeatherModel.temperature : "N/A")
             dbgprint("Diary: weather model not ready yet")
             saveToCache()
             return
         }
 
         var today = new Date().toISOString().slice(0, 10)
-
-        if (diaryLoggingEnabled) {
-            // Auto popup: only trigger if enabled and current hour >= configured popup hour
-            // and we haven't already prompted today
-            var shouldShow = false
-            if (diaryAutoPopupEnabled) {
-                shouldShow = State.shouldPrompt(
-                    { lastPromptDate: plasmoid.configuration.lastPromptDate || "" },
-                    diaryAutoPopupHour
-                )
-            } else {
-                // Manual logging mode: show once per day on first data load
-                shouldShow = (plasmoid.configuration.lastLoggedDate || "") !== today
-            }
-
-            if (shouldShow) {
-                showDiaryEntryDialog({
-                    temperature: currentWeatherModel.temperature,
-                    humidity: currentWeatherModel.humidity,
-                    pressureHpa: currentWeatherModel.pressureHpa,
-                    condition: currentWeatherModel ? "Current weather" : "No data"
-                })
-                plasmoid.configuration.lastLoggedDate = today
-                plasmoid.configuration.lastPromptDate = today
-            }
+        console.log("DEBUG: Date check - today:", today, "lastLogged:", plasmoid.configuration.lastLoggedDate || "(never)", "different:", (plasmoid.configuration.lastLoggedDate || "") !== today)
+        if (diaryLoggingEnabled && (plasmoid.configuration.lastLoggedDate || "") !== today) {
+            console.log("DEBUG: Opening diary dialog!")
+            showDiaryEntryDialog({
+                temperature: currentWeatherModel.temperature,
+                humidity: currentWeatherModel.humidity,
+                pressureHpa: currentWeatherModel.pressureHpa,
+                condition: currentWeatherModel ? "Current weather" : "No data"
+            })
+            plasmoid.configuration.lastLoggedDate = today
         }
         saveToCache()
     }
@@ -672,6 +659,65 @@ PlasmoidItem {
     DiaryUI.DiaryDialog {
         id: diaryDialog
     }
+
+    // Rain overlay effect
+    DiaryUI.WaterPhysics {
+        id: rainEffect
+        anchors.fill: parent
+        z: 9999  // On top of everything
+        
+    // enabled: true // Instead of: enabled: isRaining
+        enabled: isRaining && plasmoid.configuration.weatherEffectsEnabled &&
+                 plasmoid.configuration.particleEffectsEnabled
+        
+        windAngle: currentWeatherModel ? currentWeatherModel.windDirection : 0
+        windSpeed: currentWeatherModel ? currentWeatherModel.windSpeedMps : 0
+        rainIntensity: calculateRainIntensity()
+        mouseInfluence: 30
+    }
+    
+    // Helper property - determines if it's currently raining
+    property bool isRaining: {
+        if (!currentWeatherModel || !currentWeatherModel.iconName) return false
+        
+        var iconCode = currentWeatherModel.iconName
+        
+        // OpenWeatherMap rain codes
+        if (iconCode >= 200 && iconCode <= 299) return true  // Thunderstorm
+        if (iconCode >= 300 && iconCode <= 321) return true  // Drizzle
+        if (iconCode >= 500 && iconCode <= 531) return true  // Rain
+        
+        // Simple icon codes
+        if (iconCode >= 9 && iconCode <= 12) return true
+        
+        return false
+    }
+    
+    // Helper function - calculates rain intensity based on weather code
+    function calculateRainIntensity() {
+        if (!currentWeatherModel || !currentWeatherModel.iconName) return 0
+        
+        var code = currentWeatherModel.iconName
+        
+        // Heavy rain
+        if (code >= 502 && code <= 504) return 1.0
+        if (code === 212) return 1.0  // Heavy thunderstorm
+        if (code === 522) return 1.0
+        
+        // Moderate rain
+        if (code === 501 || code === 521) return 0.6
+        if (code === 10 || code === 11) return 0.6
+        if (code >= 200 && code <= 211) return 0.6  // Thunderstorm
+        
+        // Light rain
+        if (code === 500 || code === 520) return 0.3
+        if (code === 9) return 0.3
+        
+        // Drizzle
+        if (code >= 300 && code <= 321) return 0.2
+        
+        return 0.5  // Default moderate
+    }
     Timer {
         interval: 10000
         running: true
@@ -687,24 +733,9 @@ PlasmoidItem {
             dbgprint("*** Next Load in     : " + Math.round((currentPlace.nextReload - now) / 1000) + " sec = "+ ((currentPlace.nextReload - now) / 60000).toFixed(2) + " min")
 
             updateLastReloadedText()
-
-            // === DIARY AUTO POPUP TIME CHECK ===
-            if (diaryLoggingEnabled && diaryAutoPopupEnabled && currentWeatherModel &&
-                currentWeatherModel.temperature !== -9999) {
-                if (State.shouldPrompt(
-                        { lastPromptDate: plasmoid.configuration.lastPromptDate || "" },
-                        diaryAutoPopupHour)) {
-                    var today = new Date().toISOString().slice(0, 10)
-                    showDiaryEntryDialog({
-                        temperature: currentWeatherModel.temperature,
-                        humidity: currentWeatherModel.humidity,
-                        pressureHpa: currentWeatherModel.pressureHpa,
-                        condition: currentWeatherModel ? "Current weather" : "No data"
-                    })
-                    plasmoid.configuration.lastLoggedDate = today
-                    plasmoid.configuration.lastPromptDate = today
-                }
-            }
+            // if ((loadingData.lastloadingSuccessTime === 0) && (updatingPaused)) {
+                // currentPlace.nextReload=now + 60000()
+            // }
 
             if (loadingData.loadingDatainProgress) {
                 dbgprint("Timeout in:" + (loadingData.lastloadingStartTime + loadingData.loadingDataTimeoutMs - now))

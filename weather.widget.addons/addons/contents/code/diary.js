@@ -114,12 +114,12 @@ function appendWeather(weatherData, notes, executable, logPath, layoutType) {
     var year = now.getFullYear()
     var hours = pad(now.getHours())
     var minutes = pad(now.getMinutes())
-    
+
     // Format date strings for different layouts
     var dateShort = getShortDay(now) + ", " + day + " " + getShortMonth(now) + " " + year
     var dateFull = getFullDay(now) + ", " + day + " " + getFullMonth(now) + " " + year
     var dateAlt = getShortDay(now) + ", " + getFullMonth(now) + " " + day + ", " + year
-    
+
     // Get weather condition - handle if missing or empty
     var condition = weatherData.condition || ""
     var hasCondition = condition && condition.trim() !== ""
@@ -129,7 +129,7 @@ function appendWeather(weatherData, notes, executable, logPath, layoutType) {
 
     if (layoutType === 0) {
         // LEGACY FORMAT - Original style
-        entry = "\n" + dateShort + "\n"
+        entry = "\n" + dateShort + " - " + hours + ":" + minutes + "\n"
         if (hasCondition) {
             entry += "Weather: " + condition + "\n"
         }
@@ -139,11 +139,10 @@ function appendWeather(weatherData, notes, executable, logPath, layoutType) {
         if (notes && notes.trim() !== "") {
             entry += "\nNotes: " + notes.trim() + "\n"
         }
-        entry += "\n"
-        
+
     } else if (layoutType === 1) {
         // COMPACT FORMAT - Single line
-        entry = dateShort + " " + hours + ":" + minutes
+        entry = dateShort + " - " + hours + ":" + minutes + "\n"
         if (hasCondition) {
             entry += " - Weather: " + condition
         }
@@ -152,11 +151,10 @@ function appendWeather(weatherData, notes, executable, logPath, layoutType) {
         if (notes && notes.trim() !== "") {
             entry += "\nNotes: " + notes.trim() + "\n"
         }
-        entry += "\n-----\n\n"
-        
+
     } else if (layoutType === 2) {
         // DETAILED FORMAT - Full day name
-        entry = dateFull + " " + hours + ":" + minutes
+        entry = dateFull + " - " + hours + ":" + minutes + "\n"
         if (hasCondition) {
             entry += " - Weather: " + condition
         }
@@ -165,8 +163,7 @@ function appendWeather(weatherData, notes, executable, logPath, layoutType) {
         if (notes && notes.trim() !== "") {
             entry += "\nNotes: " + notes.trim() + "\n"
         }
-        entry += "\n"
-        
+
     } else if (layoutType === 3) {
         // MARKDOWN FORMAT - Bullet points
         entry = "\n" + dateShort + " " + hours + ":" + minutes + "\n"
@@ -179,11 +176,10 @@ function appendWeather(weatherData, notes, executable, logPath, layoutType) {
         if (notes && notes.trim() !== "") {
             entry += "\nNotes: " + notes.trim() + "\n"
         }
-        entry += "\n"
-        
+
     } else {
         // ALTERNATIVE DATE FORMAT - Month name first
-        entry = "\n" + dateAlt + " " + hours + ":" + minutes + "\n"
+        entry = "\n" + dateAlt + " - " + hours + ":" + minutes + "\n"
         if (hasCondition) {
             entry += "Weather: " + condition + "\n"
         }
@@ -193,7 +189,6 @@ function appendWeather(weatherData, notes, executable, logPath, layoutType) {
         if (notes && notes.trim() !== "") {
             entry += "\nNotes: " + notes.trim() + "\n"
         }
-        entry += "\n"
     }
 
     console.log("diary.js: Entry to write:", entry)
