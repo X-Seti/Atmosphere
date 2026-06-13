@@ -62,7 +62,16 @@ sed -i '/^import /a import "../code/dailyState.js" as State' "$MAINQML"
 grep -q 'import "../code/weatherMapping.js"' "$MAINQML" || \
 sed -i '/^import /a import "../code/weatherMapping.js" as WeatherMap' "$MAINQML"
 
-# 3) Insert DiaryDialog object (before first Timer)
+# 3a) Insert diary properties (only once)
+if ! grep -q 'diaryLoggingEnabled' "$MAINQML"; then
+  sed -i '/^PlasmoidItem {/a\
+    property bool diaryLoggingEnabled: plasmoid.configuration.diaryLoggingEnabled !== undefined ? plasmoid.configuration.diaryLoggingEnabled : true\
+    property bool diaryAutoPopupEnabled: plasmoid.configuration.diaryAutoPopupEnabled !== undefined ? plasmoid.configuration.diaryAutoPopupEnabled : false\
+    property int  diaryAutoPopupHour: plasmoid.configuration.diaryAutoPopupHour !== undefined ? plasmoid.configuration.diaryAutoPopupHour : 20\
+' "$MAINQML"
+fi
+
+# 3b) Insert DiaryDialog object (before first Timer)
 if ! grep -q 'DiaryUI.DiaryDialog' "$MAINQML"; then
   sed -i '/^ *Timer {/i\
     // Import DiaryDialog\
@@ -73,29 +82,36 @@ if ! grep -q 'DiaryUI.DiaryDialog' "$MAINQML"; then
 fi
 
 # 4) Insert diary logging hook (only once)
-if ! grep -q '=== DIARY LOGGING First Patch ===' "$MAINQML"; then
+if ! grep -q '=== DIARY LOGGING ===' "$MAINQML"; then
   sed -i '/updateLastReloadedText()/a\
-        // === DIARY LOGGING First Patch ===\
-        console.log("DEBUG: Checking diary conditions - diaryEnabled:", diaryLoggingEnabled, "weatherModel exists:", !!currentWeatherModel)\
+        // === DIARY LOGGING ===\
         if (!currentWeatherModel || currentWeatherModel.temperature === -9999) {\
-            console.log("DEBUG: Weather model not ready - exists:", !!currentWeatherModel, "temp:", currentWeatherModel ? currentWeatherModel.temperature : "N/A")\
             dbgprint("Diary: weather model not ready yet")\
             saveToCache()\
             return\
         }\
-\
-        var today = new Date().toISOString().slice(0, 10)\
-        console.log("DEBUG: Date check - today:", today, "lastLogged:", plasmoid.configuration.lastLoggedDate || "(never)", "different:", (plasmoid.configuration.lastLoggedDate || "") !== today)\
-        if (diaryLoggingEnabled && (plasmoid.configuration.lastLoggedDate || "") !== today) {\
-            console.log("DEBUG: Opening diary dialog!")\
-            var weatherCondition = WeatherMap.getWeatherDescription(currentWeatherModel.iconName, currentPlace.providerId)\
-            diaryDialog.showDiaryEntryDialog({\
-                temperature: currentWeatherModel.temperature,\
-                humidity: currentWeatherModel.humidity,\
-                pressureHpa: currentWeatherModel.pressureHpa,\
-                condition: weatherCondition\
-            })\
-            plasmoid.configuration.lastLoggedDate = today\
+        var _today = new Date().toISOString().slice(0, 10)\
+        if (diaryLoggingEnabled) {\
+            var _shouldShow = false\
+            if (diaryAutoPopupEnabled) {\
+                _shouldShow = State.shouldPrompt(\
+                    { lastPromptDate: plasmoid.configuration.lastPromptDate || "" },\
+                    diaryAutoPopupHour\
+                )\
+            } else {\
+                _shouldShow = (plasmoid.configuration.lastLoggedDate || "") !== _today\
+            }\
+            if (_shouldShow) {\
+                var _cond = WeatherMap.getWeatherDescription(currentWeatherModel.iconName, currentPlace.providerId)\
+                diaryDialog.showDiaryEntryDialog({\
+                    temperature: currentWeatherModel.temperature,\
+                    humidity: currentWeatherModel.humidity,\
+                    pressureHpa: currentWeatherModel.pressureHpa,\
+                    condition: _cond\
+                })\
+                plasmoid.configuration.lastLoggedDate = _today\
+                plasmoid.configuration.lastPromptDate = _today\
+            }\
         }\
 ' "$MAINQML"
 fi
@@ -107,7 +123,7 @@ grep -q 'import "../code/diary.js"' "$MAINQML" || { echo "✗ diary import missi
 grep -q 'import "../code/dailyState.js"' "$MAINQML" || { echo "✗ dailyState import missing"; exit 1; }
 grep -q 'import "../code/weatherMapping.js"' "$MAINQML" || { echo "✗ weatherMapping import missing"; exit 1; }
 grep -q 'DiaryUI.DiaryDialog' "$MAINQML" || { echo "✗ DiaryDialog block missing"; exit 1; }
-grep -q '=== DIARY LOGGING First Patch ===' "$MAINQML" || { echo "✗ hook missing"; exit 1; }
+grep -q '=== DIARY LOGGING ===' "$MAINQML" || { echo "✗ hook missing"; exit 1; }
 
 echo "✓ Imports OK"
 echo "✓ Hook OK"
