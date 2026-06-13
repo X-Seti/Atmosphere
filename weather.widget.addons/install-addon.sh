@@ -60,9 +60,9 @@ mkdir -p "$PLASMOID/contents/ui/gui"
 mkdir -p "$PLASMOID/contents/code"
 mkdir -p "$PLASMOID/contents/ui/config"
 
-cp -r "$ADDON_ROOT/ui/gui/"* "$PLASMOID/contents/ui/gui/"
-cp -r "$ADDON_ROOT/code/"* "$PLASMOID/contents/code/"
-cp -r "$ADDON_ROOT/ui/config/"* "$PLASMOID/contents/ui/config/"
+cp -r "$ADDON_ROOT/contents/ui/gui/"* "$PLASMOID/contents/ui/gui/"
+cp -r "$ADDON_ROOT/contents/code/"* "$PLASMOID/contents/code/"
+cp -r "$ADDON_ROOT/contents/ui/config/"* "$PLASMOID/contents/ui/config/"
 
 # -----------------------------
 # Patch main.qml
