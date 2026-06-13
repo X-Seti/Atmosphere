@@ -402,26 +402,39 @@ PlasmoidItem {
         dbgprint("meteogramModelChanged:" + meteogramModelChanged)
 
 
-        // === DIARY LOGGING First Patch ===
-        console.log("DEBUG: Checking diary conditions - diaryEnabled:", diaryLoggingEnabled, "weatherModel exists:", !!currentWeatherModel)
+        // === DIARY LOGGING ===
         if (!currentWeatherModel || currentWeatherModel.temperature === -9999) {
-            console.log("DEBUG: Weather model not ready - exists:", !!currentWeatherModel, "temp:", currentWeatherModel ? currentWeatherModel.temperature : "N/A")
             dbgprint("Diary: weather model not ready yet")
             saveToCache()
             return
         }
 
         var today = new Date().toISOString().slice(0, 10)
-        console.log("DEBUG: Date check - today:", today, "lastLogged:", plasmoid.configuration.lastLoggedDate || "(never)", "different:", (plasmoid.configuration.lastLoggedDate || "") !== today)
-        if (diaryLoggingEnabled && (plasmoid.configuration.lastLoggedDate || "") !== today) {
-            console.log("DEBUG: Opening diary dialog!")
-            showDiaryEntryDialog({
-                temperature: currentWeatherModel.temperature,
-                humidity: currentWeatherModel.humidity,
-                pressureHpa: currentWeatherModel.pressureHpa,
-                condition: currentWeatherModel ? "Current weather" : "No data"
-            })
-            plasmoid.configuration.lastLoggedDate = today
+
+        if (diaryLoggingEnabled) {
+            // Auto popup: only trigger if enabled and current hour >= configured popup hour
+            // and we haven't already prompted today
+            var shouldShow = false
+            if (diaryAutoPopupEnabled) {
+                shouldShow = State.shouldPrompt(
+                    { lastPromptDate: plasmoid.configuration.lastPromptDate || "" },
+                    diaryAutoPopupHour
+                )
+            } else {
+                // Manual logging mode: show once per day on first data load
+                shouldShow = (plasmoid.configuration.lastLoggedDate || "") !== today
+            }
+
+            if (shouldShow) {
+                showDiaryEntryDialog({
+                    temperature: currentWeatherModel.temperature,
+                    humidity: currentWeatherModel.humidity,
+                    pressureHpa: currentWeatherModel.pressureHpa,
+                    condition: currentWeatherModel ? "Current weather" : "No data"
+                })
+                plasmoid.configuration.lastLoggedDate = today
+                plasmoid.configuration.lastPromptDate = today
+            }
         }
         saveToCache()
     }
@@ -674,9 +687,24 @@ PlasmoidItem {
             dbgprint("*** Next Load in     : " + Math.round((currentPlace.nextReload - now) / 1000) + " sec = "+ ((currentPlace.nextReload - now) / 60000).toFixed(2) + " min")
 
             updateLastReloadedText()
-            // if ((loadingData.lastloadingSuccessTime === 0) && (updatingPaused)) {
-                // currentPlace.nextReload=now + 60000()
-            // }
+
+            // === DIARY AUTO POPUP TIME CHECK ===
+            if (diaryLoggingEnabled && diaryAutoPopupEnabled && currentWeatherModel &&
+                currentWeatherModel.temperature !== -9999) {
+                if (State.shouldPrompt(
+                        { lastPromptDate: plasmoid.configuration.lastPromptDate || "" },
+                        diaryAutoPopupHour)) {
+                    var today = new Date().toISOString().slice(0, 10)
+                    showDiaryEntryDialog({
+                        temperature: currentWeatherModel.temperature,
+                        humidity: currentWeatherModel.humidity,
+                        pressureHpa: currentWeatherModel.pressureHpa,
+                        condition: currentWeatherModel ? "Current weather" : "No data"
+                    })
+                    plasmoid.configuration.lastLoggedDate = today
+                    plasmoid.configuration.lastPromptDate = today
+                }
+            }
 
             if (loadingData.loadingDatainProgress) {
                 dbgprint("Timeout in:" + (loadingData.lastloadingStartTime + loadingData.loadingDataTimeoutMs - now))
