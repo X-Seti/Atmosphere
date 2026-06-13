@@ -13,8 +13,20 @@ echo "== Weather Widget Plus Addon Installer =="
 # Sanity checks
 # -----------------------------
 if [[ ! -d "$PLASMOID" ]]; then
-  echo "✗ Plasmoid not found:"
+  echo "✗ Base widget not found:"
   echo "   $PLASMOID"
+  echo ""
+  echo "Install Weather Widget Plus first, then re-run this script."
+  echo ""
+  echo "Option 1 - KDE Store (recommended):"
+  echo "   Right-click desktop > Add Widgets > Get New Widgets"
+  echo "   Search: Weather Widget Plus"
+  echo ""
+  echo "Option 2 - kpackagetool6:"
+  echo "   kpackagetool6 -t Plasma/Applet -i /path/to/weather.widget.plus"
+  echo ""
+  echo "Option 3 - original repo:"
+  echo "   https://github.com/blackadderkate/weather-widget-2"
   exit 1
 fi
 
