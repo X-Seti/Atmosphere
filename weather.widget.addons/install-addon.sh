@@ -73,19 +73,19 @@ echo "[+] Patching main.qml"
 sed -i '/`.*\${.*}`/d' "$MAINQML"
 echo "    ✓ Removed backtick template literal comments"
 
-# 1) Ensure DiaryUI import
-grep -q 'import "gui" as DiaryUI' "$MAINQML" || \
-sed -i '/^import /a import "gui" as DiaryUI' "$MAINQML"
-
-# 2) Ensure diary js imports
-grep -q 'import "../code/diary.js"' "$MAINQML" || \
-sed -i '/^import /a import "../code/diary.js" as Diary' "$MAINQML"
-
-grep -q 'import "../code/dailyState.js"' "$MAINQML" || \
-sed -i '/^import /a import "../code/dailyState.js" as State' "$MAINQML"
-
-grep -q 'import "../code/weatherMapping.js"' "$MAINQML" || \
-sed -i '/^import /a import "../code/weatherMapping.js" as WeatherMap' "$MAINQML"
+# 1) Inject all addon imports in one block (only once)
+if ! grep -q 'import "../code/diary.js"' "$MAINQML"; then
+    # Find last import line number and insert after it
+    LAST_IMPORT=$(grep -n '^import ' "$MAINQML" | tail -1 | cut -d: -f1)
+    sed -i "${LAST_IMPORT}a\\
+import \"gui\" as DiaryUI\\
+import \"../code/diary.js\" as Diary\\
+import \"../code/dailyState.js\" as State\\
+import \"../code/weatherMapping.js\" as WeatherMap" "$MAINQML"
+    echo "    ✓ Imports added"
+else
+    echo "    ✓ Imports already present"
+fi
 
 # 3a) Insert diary properties (only once)
 if ! grep -q 'diaryLoggingEnabled' "$MAINQML"; then
