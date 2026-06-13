@@ -1,34 +1,43 @@
 #!/usr/bin/env bash
 set -e
 
-PLASMOID="$HOME/.local/share/plasma/plasmoids/weather.widget.plus"
-MAINQML="$PLASMOID/contents/ui/main.qml"
-BACKUP="$MAINQML.bak.$(date +%s)"
-
 ADDON_ROOT="$(cd "$(dirname "$0")" && pwd)/addons"
 
 echo "== Weather Widget Plus Addon Installer =="
 
+# Auto-detect plasmoid location
+PLASMOID=""
+CANDIDATES=(
+    "$HOME/.local/share/plasma/plasmoids/weather.widget.plus"
+    "$HOME/.local/share/plasma/plasmoids/org.kde.weatherWidget-3"
+    "/usr/share/plasma/plasmoids/weather.widget.plus"
+    "/usr/share/plasma/plasmoids/org.kde.weatherWidget-3"
+)
+for candidate in "${CANDIDATES[@]}"; do
+    if [[ -d "$candidate" ]]; then
+        PLASMOID="$candidate"
+        echo "[+] Found widget at: $PLASMOID"
+        break
+    fi
+done
+
 # -----------------------------
 # Sanity checks
 # -----------------------------
-if [[ ! -d "$PLASMOID" ]]; then
-  echo "✗ Base widget not found:"
-  echo "   $PLASMOID"
+if [[ -z "$PLASMOID" ]]; then
+  echo "✗ Base widget not found in any known location."
   echo ""
-  echo "Install Weather Widget Plus first, then re-run this script."
+  echo "Searched:"
+  for c in "${CANDIDATES[@]}"; do echo "   $c"; done
   echo ""
-  echo "Option 1 - KDE Store (recommended):"
-  echo "   Right-click desktop > Add Widgets > Get New Widgets"
-  echo "   Search: Weather Widget Plus"
-  echo ""
-  echo "Option 2 - kpackagetool6:"
-  echo "   kpackagetool6 -t Plasma/Applet -i /path/to/weather.widget.plus"
-  echo ""
-  echo "Option 3 - original repo:"
-  echo "   https://github.com/blackadderkate/weather-widget-2"
+  echo "Install Weather Widget Plus first:"
+  echo "  yay -S plasma6-applets-weather-widget-3-git"
+  echo "  or: KDE Store https://store.kde.org/p/2281196"
   exit 1
 fi
+
+MAINQML="$PLASMOID/contents/ui/main.qml"
+BACKUP="$MAINQML.bak.$(date +%s)"
 
 if [[ ! -f "$MAINQML" ]]; then
   echo "✗ main.qml not found:"
