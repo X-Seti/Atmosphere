@@ -69,6 +69,10 @@ cp -r "$ADDON_ROOT/ui/config/"* "$PLASMOID/contents/ui/config/"
 # -----------------------------
 echo "[+] Patching main.qml"
 
+# 0) Remove backtick template literal comments - QML parser rejects them even commented out
+sed -i '/`.*\${.*}`/d' "$MAINQML"
+echo "    ✓ Removed backtick template literal comments"
+
 # 1) Ensure DiaryUI import
 grep -q 'import "gui" as DiaryUI' "$MAINQML" || \
 sed -i '/^import /a import "gui" as DiaryUI' "$MAINQML"
