@@ -1,6 +1,22 @@
 # Atmosphere Widget Addons - X-Seti - Aug 14 2025
 A reimagined version of Weather Widget 2 / plus versions — now with living atmosphere.
 
+## Known Stock Widget Bug
+
+The KDE Store version of Weather Widget Plus contains a bug where two commented-out debug lines use ES6 backtick template literals that QML's parser rejects even in comments:
+
+```
+Expected token ':' at main.qml:403
+```
+
+Fix before installing the addon:
+
+```bash
+sed -i '/`.*\${.*}`/d' ~/.local/share/plasma/plasmoids/weather.widget.plus/contents/ui/main.qml
+```
+
+The addon installer runs this automatically, but if you're using the stock widget without the addon you'll need to run it manually.
+
 ## Prerequisite
 
 **Weather Widget Plus must be installed before running the addon installer.**
