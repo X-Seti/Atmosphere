@@ -47,6 +47,7 @@ Item {
         onClicked: (mouse) => { mouse.accepted = false }
     }
     
+
     // Droplet model
     ListModel {
         id: dropletModel

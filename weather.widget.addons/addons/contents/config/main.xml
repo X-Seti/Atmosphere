@@ -234,15 +234,33 @@
 
     <group name="WeatherEffects">
         <entry name="weatherEffectsEnabled" type="Bool">
-            <default>false</default>
+            <default>true</default>
         </entry>
         <entry name="particleEffectsEnabled" type="Bool">
+            <default>true</default>
+        </entry>
+        <entry name="desktopAtmosphereEnabled" type="Bool">
             <default>true</default>
         </entry>
         <entry name="soundEffectsEnabled" type="Bool">
             <default>false</default>
         </entry>
         <entry name="wallpaperEffectsEnabled" type="Bool">
+            <default>false</default>
+        </entry>
+        <entry name="excludeApps" type="String">
+            <default>vlc,mpv,org.kde.dragonplayer,steam,com.valvesoftware.Steam,zoom,teams,obs</default>
+        </entry>
+        <entry name="hideEffectsOnExcluded" type="Bool">
+            <default>true</default>
+        </entry>
+        <entry name="hideEffectsOnFullscreen" type="Bool">
+            <default>true</default>
+        </entry>
+        <entry name="testEffectMode" type="String">
+            <default>none</default>
+        </entry>
+        <entry name="glassModeEnabled" type="Bool">
             <default>false</default>
         </entry>
         <entry name="feelsLikeTooltipEnabled" type="Bool">
